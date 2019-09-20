@@ -21,12 +21,13 @@ ui <- fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-        checkboxInput(inputId = "")
+        # checkboxInput(inputId = "")
       ),
       
       
       mainPanel(
-         
+        # Show data table ---------------------------------------------
+        dataTableOutput(outputId = "deathstable")
       )
    )
 )
@@ -34,7 +35,10 @@ ui <- fluidPage(
 # Define server logic required to draw charts, datatables, and numeric based boxes
 server <- function(input, output) {
    
-
+  # Display a data table that shows all of the journalist deaths from 1992 to 2019
+  output$deathstable <- renderDataTable({
+    datatable(data = deaths, options = list(orderClasses = TRUE))
+  })
 
 }
 
