@@ -5,12 +5,17 @@ for (i in 1:nrow(deaths)) {
     #substr(deaths[i,17], 1, nchar(deaths[i,17])-1)
 }
 deaths <- na.omit(deaths)
-names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 deaths
+names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
+nrow(deaths)
 for (i in 1:nrow(deaths)) {
   for (j in 1:ncol(deaths)) {
-    deaths <- deaths[ grep("na", deaths[i,j], invert = TRUE) , ]
+    na_value <- sum(deaths[i,j] == "na", na.rm = TRUE)
+    if (na_value == 1) {
+      deaths <- deaths[-i,]
+    }
   }
 }
+nrow(deaths)
 deaths
 write.csv(deaths, file = 'JournalistDeaths.csv', row.names = FALSE)
