@@ -22,5 +22,24 @@ for (i in 1:nrow(deaths)) {
 # Rename column names that have "." separating words
 names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 
+
+# Extract years from first column by finding 4 consecutive numbers
+# Logic found on stackoverflow: https://stackoverflow.com/questions/48121585/extract-year-from-string-and-append-to-dataframe/48121686
+extractYear <- function(string) {
+  year <- regmatches(string, regexec("[0-9]{4}", string))
+  sapply(year, function(x) {
+    if(length(x) > 0){
+      x <- as.numeric(x)
+    } else {
+      x <- "Unknown"
+    }
+  })
+}
+
+# Apply function to first column in dataset to find the year of each record
+deaths$Date <- extractYear(deaths$Date)
+
+deaths
+
 # Write updated dataset to csv file
 write.csv(deaths, file = 'JournalistDeaths.csv', row.names = FALSE)
