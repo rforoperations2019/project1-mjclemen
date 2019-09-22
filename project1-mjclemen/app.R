@@ -12,6 +12,9 @@ library(scales)
 
 deaths <- read.csv("JournalistDeaths.csv")
 
+# Rename column names that have "." separating words
+names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
+
 # Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- fluidPage(
    
