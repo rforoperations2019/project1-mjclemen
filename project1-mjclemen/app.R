@@ -35,16 +35,16 @@ ui <- dashboardPage(
     width = 300,
     
         # Select what type of death to plot ------------------------
-        checkboxGroupInput(inputId = "selected.death.type",
-                           label = "Select Type of Death(s) to view in Data Table:",
-                           choices = sort(unique(deaths$`Type of Death`)),
-                           selected = "Murder"),
+        checkboxGroupInput(inputId = "selected.impunity",
+                           label = "Select whether impunity was granted to view in Data Table:",
+                           choices = sort(unique(deaths$`Impunity  for Murder`)),
+                           selected = "Partial"),
         
         # Select what type of medium to plot ------------------------
         radioButtons(inputId = "selected.medium",
-                     label = "Select which medium to view in Data Table:",
+                     label = "Select what type of medium to view in Data Table:",
                      choices = c("Internet", "Print", "Radio", "Television"),
-                     selected = "Print"),
+                     selected = "Internet"),
         
         sliderInput(inputId = "selected.year",
                     label = "Select which year to view in Data Table:",
@@ -67,10 +67,17 @@ server <- function(input, output) {
   
   deaths_subset <- reactive({
     deaths <- subset(deaths,
-                     `Type of Death` %in% input$selected.death.type &
+                     `Impunity  for Murder` %in% input$selected.impunity &
                      Medium %in% input$selected.medium &
-                    `Year of Death` >= input$selected.year[1] & `Year of Death` <= input$selected.year[2]
+                       `Year of Death` >= input$selected.year[1] & `Year of Death` <= input$selected.year[2]
                      )
+  })
+  
+  # Country with the most deaths info box ----------------------------------------------
+  output$country.deaths <- renderInfoBox({
+    ds <- deaths_subset()
+    highest <- count(ds,ds$`Country Killed`)
+    infoBox("Country with the most deaths", value = highest, color = "green")
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
