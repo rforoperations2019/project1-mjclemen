@@ -39,6 +39,14 @@ extractYear <- function(string) {
 # Apply function to first column in dataset to find the year of each record
 deaths$Date <- extractYear(deaths$Date)
 
+# Remove records with unknown dates
+for(i in 1:nrow(deaths)) {
+  unknown_value <- sum(str_trim(deaths[i,"Date"]) == "Unknown", na.rm = TRUE)
+  if(unknown_value == 1) {
+    deaths <- deaths[-i,]
+  }
+}
+
 # Uncovering unknown information in the data. Renaming values that equal the column name to instead
 # be marked as "Unknown"
 deaths$Name[deaths$Name == "Name"] <- "Unknown"
@@ -60,8 +68,6 @@ deaths$`Impunity  for Murder`[deaths$`Impunity  for Murder` == "Complete Impunit
 deaths$`Taken Captive`[deaths$`Taken Captive` == "Taken Captive"] <- "Unknown"
 deaths$Threatened[deaths$Threatened == "Threatened"] <- "Unknown"
 deaths$Tortured[deaths$Tortured == "Tortured"] <- "Unknown"
-
-deaths
 
 # Write updated dataset to csv file
 write.csv(deaths, file = 'JournalistDeaths.csv', row.names = FALSE)
