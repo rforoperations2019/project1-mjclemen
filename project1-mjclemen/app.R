@@ -58,6 +58,7 @@ server <- function(input, output) {
   
   deaths_subset <- reactive({
     deaths <- subset(deaths,
+                     `Type of Death` %in% input$selected.death.type &
                      Medium %in% input$selected.medium &
                     `Year of Death` >= input$selected.year[1] & `Year of Death` <= input$selected.year[2]
                      )
