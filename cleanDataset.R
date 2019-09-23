@@ -39,6 +39,28 @@ extractYear <- function(string) {
 # Apply function to first column in dataset to find the year of each record
 deaths$Date <- extractYear(deaths$Date)
 
+# Uncovering unknown information in the data. Renaming values that equal the column name to instead
+# be marked as "Unknown"
+deaths$Name[deaths$Name == "Name"] <- "Unknown"
+deaths$Sex[deaths$Sex == "Sex"] <- "Unknown"
+deaths$`Country Killed`[deaths$`Country Killed` == "Country Killed"] <- "Unknown"
+deaths$Organization[deaths$Organization == "Organization"] <- "Unknownn"
+deaths$Nationality[deaths$Nationality == "Nationality"] <- "Unknown"
+deaths$Medium[deaths$Medium == "Medium"] <- "Unknown"
+deaths$Job[deaths$Job == "Job"] <- "Unknown"
+deaths$Coverage[deaths$Coverage == "Coverage"] <- "Unknown"
+deaths$Freelance[deaths$Freelance == "Freelance"] <- "Unknown"
+deaths$`Local Foreign`[deaths$`Local Foreign` == "Local/Foreign"] <- "Unknown"
+deaths$`Source of Fire`[deaths$`Source of Fire` == "Source of Fire"] <- "Unknown"
+deaths$`Source of Fire`[deaths$`Source of Fire` == "Unknown Fire"] <- "Unknown"
+deaths$`Type of Death`[deaths$`Type of Death` == "Type of Death"] <- "Unknown"
+deaths$`Impunity  for Murder`[deaths$`Impunity  for Murder` == "Impunity for Murder"] <- "Unknown"
+deaths$`Impunity  for Murder`[deaths$`Impunity  for Murder` == "Impunity (for Murder)"] <- "Unknown"
+deaths$`Impunity  for Murder`[deaths$`Impunity  for Murder` == "Complete Impunity"] <- "Yes"
+deaths$`Taken Captive`[deaths$`Taken Captive` == "Taken Captive"] <- "Unknown"
+deaths$Threatened[deaths$Threatened == "Threatened"] <- "Unknown"
+deaths$Tortured[deaths$Tortured == "Tortured"] <- "Unknown"
+
 deaths
 
 # Write updated dataset to csv file
