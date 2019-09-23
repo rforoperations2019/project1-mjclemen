@@ -47,6 +47,10 @@ for(i in 1:nrow(deaths)) {
   }
 }
 
+
+# Rename Date column to "Year of Death" to match what the values are
+names(deaths)[1] <- "Year of Death"
+
 # Uncovering unknown information in the data. Renaming values that equal the column name to instead
 # be marked as "Unknown"
 deaths$Name[deaths$Name == "Name"] <- "Unknown"
