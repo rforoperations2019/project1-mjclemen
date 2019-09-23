@@ -19,12 +19,22 @@ names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 ui <- fluidPage(
    
    # Application title
-   titlePanel("Journalist Deaths since 1992"),
+   titlePanel("Journalist Deaths 1992 - 2019"),
    
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-        # checkboxInput(inputId = "")
+        # Select what type of death to plot ------------------------
+        checkboxGroupInput(inputId = "selected.death.type",
+                           label = "Select Type of Death(s) to view in Data Table:",
+                           choices = sort(unique(deaths$`Type of Death`)),
+                           selected = c("Public Works", "Finance")),
+        
+        # Select what type of medium to plot ------------------------
+        radioButtons(inputId = "selected.medium",
+                     label = "Select which medium to view in Data Table:",
+                     choices = c("Internet", "Print", "Radio", "Television"),
+                     selected = "Print")
       ),
       
       
