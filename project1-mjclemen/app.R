@@ -25,10 +25,15 @@ ui <- dashboardPage(
    # Place application title in header of dashboard
   app.header <- dashboardHeader(
    title = "Journalist Deaths 1992 - 2019",
+
+   # Make space for the title
    titleWidth = 300
    ),
   
   app.sidebar <- dashboardSidebar(
+    # Change sidebar width to match the title width
+    width = 300,
+    
         # Select what type of death to plot ------------------------
         checkboxGroupInput(inputId = "selected.death.type",
                            label = "Select Type of Death(s) to view in Data Table:",
@@ -45,7 +50,9 @@ ui <- dashboardPage(
                     label = "Select which year to view in Data Table:",
                     min = min(deaths$`Year of Death`),
                     max = max(deaths$`Year of Death`),
-                    value = c(1995,2019))
+                    value = c(1995,2019),
+                    step = 1,
+                    sep = "")
       ),
       
       
