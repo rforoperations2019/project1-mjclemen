@@ -19,10 +19,13 @@ names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 
 # Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- dashboardPage(
+  # Set the header color
+  skin = "green",
    
    # Place application title in header of dashboard
   app.header <- dashboardHeader(
-   title = "Journalist Deaths 1992 - 2019"
+   title = "Journalist Deaths 1992 - 2019",
+   titleWidth = 300
    ),
   
   app.sidebar <- dashboardSidebar(
