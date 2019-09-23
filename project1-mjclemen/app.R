@@ -18,19 +18,19 @@ names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 # deaths$`Year of Death` <- as.Date(as.character(deaths$`Year of Death`), format = "%Y")
 
 # Define UI for application that creates a dashboard on journalist deaths since 1992
-ui <- fluidPage(
+ui <- dashboardPage(
    
-   # Application title
-   titlePanel("Journalist Deaths 1992 - 2019"),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
+   # Place application title in header of dashboard
+  app.header <- dashboardHeader(
+   title = "Journalist Deaths 1992 - 2019"
+   ),
+  
+  app.sidebar <- dashboardSidebar(
         # Select what type of death to plot ------------------------
         checkboxGroupInput(inputId = "selected.death.type",
                            label = "Select Type of Death(s) to view in Data Table:",
                            choices = sort(unique(deaths$`Type of Death`)),
-                           selected = c("Public Works", "Finance")),
+                           selected = "Murder"),
         
         # Select what type of medium to plot ------------------------
         radioButtons(inputId = "selected.medium",
@@ -46,12 +46,11 @@ ui <- fluidPage(
       ),
       
       
-      mainPanel(
+      app.body <- dashboardBody(
         # Show data table ---------------------------------------------
         dataTableOutput(outputId = "deathstable")
       )
    )
-)
 
 # Define server logic required to draw charts, datatables, and numeric based boxes
 server <- function(input, output) {
