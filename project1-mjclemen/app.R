@@ -68,9 +68,9 @@ server <- function(input, output) {
   deaths_subset <- reactive({
     deaths <- subset(deaths,
                      `Impunity  for Murder` %in% input$selected.impunity &
-                     Medium %in% input$selected.medium &
                        `Year of Death` >= input$selected.year[1] & `Year of Death` <= input$selected.year[2]
                      )
+     deaths <- filter(deaths,grepl(input$selected.medium,Medium))
   })
   
   # Country with the most deaths info box ----------------------------------------------
