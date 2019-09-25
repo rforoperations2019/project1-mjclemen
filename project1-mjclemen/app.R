@@ -58,10 +58,13 @@ ui <- dashboardPage(
       
       app.body <- dashboardBody(
         # Show info box ---------------------------------------------
-        infoBoxOutput(outputId = "country.deaths"),
+        uiOutput(outputId = "country.deaths"),
         
         # Show info box ---------------------------------------------
-        infoBoxOutput(outputId = "sex.deaths"),
+        uiOutput(outputId = "sex.deaths"),
+        
+        # Show info box ---------------------------------------------
+        valueBoxOutput(outputId = "captive"),
         
         # Show data table ---------------------------------------------
         dataTableOutput(outputId = "deathstable")
@@ -80,17 +83,25 @@ server <- function(input, output) {
   })
   
   # Country with the most deaths info box ----------------------------------------------
-  output$country.deaths <- renderInfoBox({
+  output$country.deaths <- renderUI({
     ds <- deaths_subset()
     highest <- tail(names(sort(table(ds$`Country Killed`))), 1)
-    infoBox("Country with the most deaths", value = highest, color = "green")
+    infoBox("Country with the most deaths", value = highest, color = "green", width = 5)
   })
   
   # Sex with the least deaths info box ----------------------------------------------
-  output$sex.deaths <- renderInfoBox({
+  output$sex.deaths <- renderUI({
     ds <- deaths_subset()
     lowest <- tail(names(sort(table(ds$Sex))), 2)
-    infoBox("Sex with the fewest deaths", value = lowest, color = "green")
+    infoBox("Sex with the fewest deaths", value = lowest, color = "green", width = 5)
+  })
+  
+  # Count how many were taken captive and put in value box ------------------------------
+  output$captive <- renderUI({
+    ds <- deaths_subset()
+    captive <- table(str_trim(ds$`Taken Captive`))
+    count.captive <- captive[names(captive) == "Yes"]
+    valueBox(count.captive, subtitle = "Taken Captive", color = "green")
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
