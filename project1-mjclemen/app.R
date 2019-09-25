@@ -38,13 +38,13 @@ ui <- dashboardPage(
         checkboxGroupInput(inputId = "selected.impunity",
                            label = "Select whether impunity was granted to view in Data Table:",
                            choices = sort(unique(deaths$`Impunity  for Murder`)),
-                           selected = "Partial"),
+                           selected = "Yes"),
         
         # Select what type of medium to plot ------------------------
         radioButtons(inputId = "selected.medium",
                      label = "Select what type of medium to view in Data Table:",
                      choices = c("Internet", "Print", "Radio", "Television"),
-                     selected = "Internet"),
+                     selected = "Television"),
         
         sliderInput(inputId = "selected.year",
                     label = "Select which year to view in Data Table:",
@@ -59,6 +59,9 @@ ui <- dashboardPage(
       app.body <- dashboardBody(
         # Show info box ---------------------------------------------
         infoBoxOutput(outputId = "country.deaths"),
+        
+        # Show info box ---------------------------------------------
+        infoBoxOutput(outputId = "sex.deaths"),
         
         # Show data table ---------------------------------------------
         dataTableOutput(outputId = "deathstable")
@@ -79,8 +82,15 @@ server <- function(input, output) {
   # Country with the most deaths info box ----------------------------------------------
   output$country.deaths <- renderInfoBox({
     ds <- deaths_subset()
-    highest <- sort(table(ds$`Country Killed`),decreasing=TRUE)[1]
+    highest <- tail(names(sort(table(ds$`Country Killed`))), 1)
     infoBox("Country with the most deaths", value = highest, color = "green")
+  })
+  
+  # Sex with the least deaths info box ----------------------------------------------
+  output$sex.deaths <- renderInfoBox({
+    ds <- deaths_subset()
+    lowest <- tail(names(sort(table(ds$Sex))), 2)
+    infoBox("Sex with the fewest deaths", value = lowest, color = "green")
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
