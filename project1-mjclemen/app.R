@@ -57,6 +57,9 @@ ui <- dashboardPage(
       
       
       app.body <- dashboardBody(
+        # Show info box ---------------------------------------------
+        infoBoxOutput(outputId = "country.deaths"),
+        
         # Show data table ---------------------------------------------
         dataTableOutput(outputId = "deathstable")
       )
@@ -76,7 +79,7 @@ server <- function(input, output) {
   # Country with the most deaths info box ----------------------------------------------
   output$country.deaths <- renderInfoBox({
     ds <- deaths_subset()
-    highest <- count(ds,ds$`Country Killed`)
+    highest <- sort(table(ds$`Country Killed`),decreasing=TRUE)[1]
     infoBox("Country with the most deaths", value = highest, color = "green")
   })
    
