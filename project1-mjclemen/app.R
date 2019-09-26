@@ -76,7 +76,7 @@ app.body <- dashboardBody(
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
             uiOutput(outputId = "captive"),
-            plotOutput(outputId = "type.over.year")
+            plotOutput(outputId = "coverage.over.year")
             )
     )
   )
@@ -128,6 +128,16 @@ server <- function(input, output) {
   output$type.over.year <- renderPlot({
     ds <- deaths_subset()
     ggplot(ds, aes(x = ds$`Type of Death`, y = ds$`Year of Death`)) + geom_boxplot()
+  })
+  
+  output$coverage.over.year <- renderPlot({
+    ds <- deaths_subset()
+    ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Year of Death`, Coverage)
+                        ][,.(Coverage = V1, `Year of Death`)]
+    
+    ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
+    
+    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$Year)) + geom_boxplot()
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
