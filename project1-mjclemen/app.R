@@ -61,7 +61,7 @@ app.body <- dashboardBody(
             fluidRow(
               column(
                 # Show data table ---------------------------------------------
-                dataTableOutput(outputId = "deathstable"), width = 8
+                dataTableOutput(outputId = "deathstable"), width = 12
               )
               )
             ),
@@ -76,11 +76,10 @@ app.body <- dashboardBody(
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
             fluidRow(
-              uiOutput(outputId = "captive")),
+              uiOutput(outputId = "captive"),
+              textOutput(outputId = "boxplot.y.info")),
             fluidRow(
-              plotOutput(outputId = "coverage.over.year", click = "boxplot_click")),
-            fluidRow(
-              textOutput(outputId = "boxplot.y.info"))
+              plotOutput(outputId = "coverage.over.year", click = "boxplot_click"))
             )
     )
   )
