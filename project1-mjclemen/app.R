@@ -114,11 +114,12 @@ server <- function(input, output) {
     infoBox("Country with the most deaths", value = highest, color = "green", width = 5)
   })
   
-  # Sex with the least deaths info box ----------------------------------------------
+  # Number of male deaths info box ----------------------------------------------
   output$sex.deaths <- renderUI({
     ds <- deaths_subset()
-    lowest <- tail(names(sort(table(ds$Sex))), 2)
-    infoBox("Sex with the fewest deaths", value = lowest, color = "green", width = 5)
+    sex <- table(ds$Sex)
+    male.count <- sex[names(sex) == "Male"]
+    infoBox("Number of Male Deaths:", value = male.count, color = "green", width = 5)
   })
   
   # Count how many were taken captive and put in value box ------------------------------
