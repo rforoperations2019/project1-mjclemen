@@ -76,7 +76,8 @@ app.body <- dashboardBody(
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
             uiOutput(outputId = "captive"),
-            plotOutput(outputId = "coverage.over.year")
+            plotOutput(outputId = "coverage.over.year", click = "boxplot_click"),
+            textOutput(outputId = "boxplot.y.info")
             )
     )
   )
@@ -138,6 +139,10 @@ server <- function(input, output) {
     ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
     
     ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$Year)) + geom_boxplot()
+  })
+  
+  output$boxplot.y.info <- renderText({
+    paste0("y=", round(input$boxplot_click$y))
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
