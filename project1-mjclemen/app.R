@@ -33,19 +33,19 @@ app.sidebar <- dashboardSidebar(
     
     # Select what type of death to plot ------------------------
     checkboxGroupInput(inputId = "selected.impunity",
-                       label = "Select whether impunity was granted to view in Data Table:",
+                       label = "Select whether impunity was granted to view:",
                        choices = sort(unique(deaths$`Impunity  for Murder`)),
                        selected = "Yes"),
     
     # Select what type of medium to plot ------------------------
     radioButtons(inputId = "selected.medium",
-                 label = "Select what type of medium to view in Data Table:",
+                 label = "Select what type of medium (of the journalist) to view:",
                  choices = c("Internet", "Print", "Radio", "Television"),
                  selected = "Television"),
     
     # Select what years of data to plot ------------------------
     sliderInput(inputId = "selected.year",
-                label = "Select which year to view in Data Table:",
+                label = "Select which year(s) to view:",
                 min = min(deaths$`Year of Death`),
                 max = max(deaths$`Year of Death`),
                 value = c(1995,2019),
@@ -58,8 +58,12 @@ app.body <- dashboardBody(
   
   tabItems(
     tabItem(tabName = "datatable",
-            # Show data table ---------------------------------------------
-            dataTableOutput(outputId = "deathstable")
+            fluidRow(
+              column(
+                # Show data table ---------------------------------------------
+                dataTableOutput(outputId = "deathstable"), width = 8
+              )
+              )
             ),
     tabItem(tabName = "country_stats",
             # Show info box ---------------------------------------------
@@ -71,7 +75,8 @@ app.body <- dashboardBody(
             ),
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
-            valueBoxOutput(outputId = "captive")
+            uiOutput(outputId = "captive"),
+            plotOutput(outputId = "type.over.year")
             )
     )
   )
@@ -88,6 +93,8 @@ ui <- dashboardPage(
 # Define server logic required to draw charts, datatables, and numeric based boxes
 server <- function(input, output) {
   
+  # Create subset of deaths dataset to account for user input. Specifically, year range, selected medium
+  # of the journalist, and whether the murder was impunity.
   deaths_subset <- reactive({
     deaths <- subset(deaths,
                      `Impunity  for Murder` %in% input$selected.impunity &
@@ -115,7 +122,12 @@ server <- function(input, output) {
     ds <- deaths_subset()
     captive <- table(str_trim(ds$`Taken Captive`))
     count.captive <- captive[names(captive) == "Yes"]
-    valueBox(count.captive, subtitle = "Taken Captive", color = "green")
+    infoBox(title = "Taken captive by an organization before death:", value = count.captive, color = "green", width = 5)
+  })
+  
+  output$type.over.year <- renderPlot({
+    ds <- deaths_subset()
+    ggplot(ds, aes(x = ds$`Type of Death`, y = ds$`Year of Death`)) + geom_boxplot()
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
