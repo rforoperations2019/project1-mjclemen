@@ -45,8 +45,11 @@ for(i in 1:nrow(deaths)) {
   if(unknown_value == 1) {
     deaths <- deaths[-i,]
   }
+  if (str_trim(deaths[i, "Type of Death"]) == "Suspected Source of Fire:") {
+    deaths <- deaths[-i,]
+  }
+  
 }
-
 
 # Rename Date column to "Year of Death" to match what the values are
 names(deaths)[1] <- "Year of Death"
