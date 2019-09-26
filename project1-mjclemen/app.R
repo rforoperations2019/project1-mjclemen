@@ -9,6 +9,7 @@ library(stringr)
 library(tools)
 library(rlist)
 library(scales)
+library(data.table)
 
 deaths <- read.csv("JournalistDeaths.csv")
 
@@ -71,7 +72,8 @@ app.body <- dashboardBody(
             ),
     tabItem(tabName = "demographic_stats",
             # Show info box ---------------------------------------------
-            uiOutput(outputId = "sex.deaths")
+            uiOutput(outputId = "sex.deaths"),
+            plotOutput(outputId = "barplot.nationality")
             ),
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
@@ -152,7 +154,16 @@ server <- function(input, output) {
       year <- round(input$boxplot_click$y)
       HTML("You've selected the year: ", year)
     }
-    #paste0("y=", round(input$boxplot_click$y))
+  })
+  
+  output$barplot.nationality <- renderPlot({
+    ds <- deaths_subset()
+    top.ten <- tail(names(sort(table(ds$Nationality))), 10)
+    count.n <- ds %>%
+      group_by(Nationality) %>%
+      summarise(counts = n())
+    top.counts <- tail(names(sort(table(count.n))), 10)
+    ggplot(ds, aes(x = top.ten, y = top.counts)) + geom_bar()
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
