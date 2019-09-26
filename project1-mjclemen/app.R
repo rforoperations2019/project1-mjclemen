@@ -15,61 +15,75 @@ deaths <- read.csv("JournalistDeaths.csv")
 # Rename column names that have "." separating words
 names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 
-# deaths$`Year of Death` <- as.Date(as.character(deaths$`Year of Death`), format = "%Y")
+# Place application title in header of dashboard
+app.header <- dashboardHeader(
+  title = "Journalist Deaths 1992 - 2019", titleWidth = 300
+  )
+
+app.sidebar <- dashboardSidebar(
+  # Change sidebar width to match the title width
+  width = 300,
+  
+  sidebarMenu(id = "tabs",
+    
+    menuItem("Datatable", tabName = "datatable", icon = icon("th")),
+    menuItem("Country Stats", tabName = "country_stats", icon = icon("th")),
+    menuItem("Demographic Stats", tabName = "demographic_stats", icon = icon("th")),
+    menuItem("Hostage Stats", tabName = "hostage_stats", icon = icon("th")),
+    
+    # Select what type of death to plot ------------------------
+    checkboxGroupInput(inputId = "selected.impunity",
+                       label = "Select whether impunity was granted to view in Data Table:",
+                       choices = sort(unique(deaths$`Impunity  for Murder`)),
+                       selected = "Yes"),
+    
+    # Select what type of medium to plot ------------------------
+    radioButtons(inputId = "selected.medium",
+                 label = "Select what type of medium to view in Data Table:",
+                 choices = c("Internet", "Print", "Radio", "Television"),
+                 selected = "Television"),
+    
+    # Select what years of data to plot ------------------------
+    sliderInput(inputId = "selected.year",
+                label = "Select which year to view in Data Table:",
+                min = min(deaths$`Year of Death`),
+                max = max(deaths$`Year of Death`),
+                value = c(1995,2019),
+                step = 1,
+                sep = "")
+    )
+  )
+
+app.body <- dashboardBody(
+  
+  tabItems(
+    tabItem(tabName = "datatable",
+            # Show data table ---------------------------------------------
+            dataTableOutput(outputId = "deathstable")
+            ),
+    tabItem(tabName = "country_stats",
+            # Show info box ---------------------------------------------
+            uiOutput(outputId = "country.deaths")
+            ),
+    tabItem(tabName = "demographic_stats",
+            # Show info box ---------------------------------------------
+            uiOutput(outputId = "sex.deaths")
+            ),
+    tabItem(tabName = "hostage_stats",
+            # Show info box ---------------------------------------------
+            valueBoxOutput(outputId = "captive")
+            )
+    )
+  )
 
 # Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- dashboardPage(
+  header = app.header,
+  sidebar = app.sidebar,
+  body = app.body,
   # Set the header color
-  skin = "green",
-   
-   # Place application title in header of dashboard
-  app.header <- dashboardHeader(
-   title = "Journalist Deaths 1992 - 2019",
-
-   # Make space for the title
-   titleWidth = 300
-   ),
-  
-  app.sidebar <- dashboardSidebar(
-    # Change sidebar width to match the title width
-    width = 300,
-    
-        # Select what type of death to plot ------------------------
-        checkboxGroupInput(inputId = "selected.impunity",
-                           label = "Select whether impunity was granted to view in Data Table:",
-                           choices = sort(unique(deaths$`Impunity  for Murder`)),
-                           selected = "Yes"),
-        
-        # Select what type of medium to plot ------------------------
-        radioButtons(inputId = "selected.medium",
-                     label = "Select what type of medium to view in Data Table:",
-                     choices = c("Internet", "Print", "Radio", "Television"),
-                     selected = "Television"),
-        
-        sliderInput(inputId = "selected.year",
-                    label = "Select which year to view in Data Table:",
-                    min = min(deaths$`Year of Death`),
-                    max = max(deaths$`Year of Death`),
-                    value = c(1995,2019),
-                    step = 1,
-                    sep = "")
-      ),
-      
-      
-      app.body <- dashboardBody(
-        # Show info box ---------------------------------------------
-        uiOutput(outputId = "country.deaths"),
-        
-        # Show info box ---------------------------------------------
-        uiOutput(outputId = "sex.deaths"),
-        
-        # Show info box ---------------------------------------------
-        valueBoxOutput(outputId = "captive"),
-        
-        # Show data table ---------------------------------------------
-        dataTableOutput(outputId = "deathstable")
-      )
-   )
+  skin = "green"
+)
 
 # Define server logic required to draw charts, datatables, and numeric based boxes
 server <- function(input, output) {
