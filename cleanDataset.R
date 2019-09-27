@@ -82,5 +82,7 @@ deaths$`Taken Captive`[deaths$`Taken Captive` == "Taken Captive"] <- "Unknown"
 deaths$Threatened[deaths$Threatened == "Threatened"] <- "Unknown"
 deaths$Tortured[deaths$Tortured == "Tortured"] <- "Unknown"
 
+deaths$Freelance <- toTitleCase(deaths$Freelance)
+
 # Write updated dataset to csv file
 write.csv(deaths, file = 'JournalistDeaths.csv', row.names = FALSE)
