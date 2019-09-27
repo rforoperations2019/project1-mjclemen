@@ -56,15 +56,13 @@ app.sidebar <- dashboardSidebar(
   )
 
 app.body <- dashboardBody(
+
   
   tabItems(
     tabItem(tabName = "datatable",
             fluidRow(
-              column(
-                # Show data table ---------------------------------------------
-                dataTableOutput(outputId = "deathstable"), width = 12
-              )
-              )
+              # Show data table ---------------------------------------------
+              dataTableOutput(outputId = "deathstable"))
             ),
     tabItem(tabName = "country_stats",
             # Show info box ---------------------------------------------
@@ -111,7 +109,7 @@ server <- function(input, output) {
   # Country with the most deaths info box ----------------------------------------------
   output$country.deaths <- renderUI({
     ds <- deaths_subset()
-    highest <- tail(names(sort(table(ds$`Country Killed`))), 1)
+    highest <- names(tail(sort(table(ds$`Country Killed`)), 1))
     infoBox("Country with the most deaths", value = highest, color = "green", width = 5)
   })
   
@@ -158,17 +156,18 @@ server <- function(input, output) {
   
   output$barplot.nationality <- renderPlot({
     ds <- deaths_subset()
-    top.ten <- tail(names(sort(table(ds$Nationality))), 10)
     count.n <- ds %>%
-      group_by(Nationality) %>%
-      summarise(counts = n())
-    top.counts <- tail(names(sort(table(count.n))), 10)
-    ggplot(ds, aes(x = top.ten, y = top.counts)) + geom_bar()
+      arrange(Nationality) %>%
+      head(5)
+    top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
+    ggplot(ds, aes(x = Nationality)) + geom_bar() +
+      scale_x_discrete(limits = top.nationalities) +
+      labs(y = "Number of Journalist Deaths")
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
   output$deathstable <- renderDataTable({
-    datatable(data = deaths_subset(), options = list(orderClasses = TRUE))
+    datatable(data = deaths_subset(), options = list(orderClasses = TRUE, autoWidth = FALSE))
   })
 
 }
