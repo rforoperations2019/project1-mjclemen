@@ -84,7 +84,10 @@ app.body <- dashboardBody(
             # Show info box ---------------------------------------------
             fluidRow(
               valueBoxOutput(outputId = "captive")
-              )
+              ),
+            fluidRow(
+              plotOutput(outputId = "source.by.coverage")
+            )
     )
   )
 )
@@ -205,6 +208,23 @@ server <- function(input, output) {
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
   output$deathstable <- renderDataTable({
     datatable(data = deaths_subset(), options = list(orderClasses = TRUE, autoWidth = FALSE))
+  })
+  
+  output$source.by.coverage <- renderPlot({
+    ds <- deaths_subset()
+    ds_split <- setDT(ds)[, strsplit(str_trim(as.character(`Source of Fire`)), ",", fixed=TRUE),
+                              by = .(Tortured, `Year of Death`,`Source of Fire`)
+                              ][,.(`Source of Fire` = V1, Tortured, `Year of Death`)]
+    
+    ds_split$`Source of Fire` <- as.factor(str_trim(ds_split$`Source of Fire`))
+    
+    ggplot(ds_split, aes(x = `Year of Death`)) +
+      geom_density(aes(fill=`Source of Fire`), alpha=0.8) +
+      labs(title="Density of Deaths", 
+           subtitle="Year of Death grouped by Source of Murder",
+           x="Year",
+           y = "Density (Deaths)",
+           fill="Source of Murder")
   })
 
 }
