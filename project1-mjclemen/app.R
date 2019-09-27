@@ -52,7 +52,13 @@ app.sidebar <- dashboardSidebar(
                 value = c(1995,2019),
                 step = 1,
                 sep = "")
-    )
+    ),
+  
+  conditionalPanel(
+    condition = "input$sidebar == 'demographic_stats'",
+    selectInput("fill.choice", "Choose how to fill the Nationality Barplot:", 
+                choices = c("Freelance", "Threatened", "Tortured"))
+  )
   )
 
 app.body <- dashboardBody(
@@ -73,13 +79,18 @@ app.body <- dashboardBody(
               plotOutput(outputId = "coverage.per.country", hover = "dotplot_hover"))
             ),
     tabItem(tabName = "demographic_stats",
-            # Show info box ---------------------------------------------
-            uiOutput(outputId = "sex.deaths"),
-            # Show user input radio buttons to select how to fill the bar plot
-            radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
-                           choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance"),
-            # Show barplot, showing the number of deaths per journalist nationality
-            plotOutput(outputId = "barplot.nationality")
+            fluidRow(
+              # Show info box ---------------------------------------------
+              uiOutput(outputId = "sex.deaths"),
+              textOutput(outputId = "hi"),
+              # Show user input radio buttons to select how to fill the bar plot
+              radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
+                           choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
+            ),
+            fluidRow(
+              # Show barplot, showing the number of deaths per journalist nationality
+              plotOutput(outputId = "barplot.nationality")
+            )
             ),
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
@@ -104,6 +115,10 @@ ui <- dashboardPage(
 
 # Define server logic required to draw charts, datatables, and numeric based boxes
 server <- function(input, output) {
+  
+  output$hi <- renderText({
+    paste("Hi")
+  })
   
   # Create subset of deaths dataset to account for user input. Specifically, year range, selected medium
   # of the journalist, and whether the murder was impunity.
@@ -138,27 +153,6 @@ server <- function(input, output) {
     # Get the number of deaths for each country, sort it, and extract the one with the highest count
     highest.country <- names(tail(sort(table(ds$`Country Killed`)), 1))
     valueBox(value = highest.country, subtitle = "Has the Most Deaths", color = "green", width = 3)
-  })
-  
-  # Number of male deaths value box ----------------------------------------------
-  # Note: I used renderUI intead of renderValueBox because width only works in prior
-  output$sex.deaths <- renderUI({
-    ds <- deaths_subset()
-    # Get the count of deaths for both sexes
-    sex.counts <- table(ds$Sex)
-    # Extract the count of deaths for males to display in dashboard
-    male.count <- sex.counts[names(sex.counts) == "Male"]
-    valueBox(value = male.count, subtitle = "Male Deaths", color = "green", width = 3)
-  })
-  
-  # Number of journalists taken captive value box ------------------------------
-  output$captive <- renderValueBox({
-    ds <- deaths_subset()
-    # Get the count of journalists taken captive and those not taken captive
-    captive <- table(str_trim(ds$`Taken Captive`))
-    # Extract the count of only those taken captive to display in dashboard
-    count.captive <- captive[names(captive) == "Yes"]
-    valueBox(value = count.captive, subtitle = "Journalists Taken Captive Before Death", color = "green")
   })
   
   # Plot the topic that the journalists covered over the years
@@ -207,6 +201,18 @@ server <- function(input, output) {
     }
   })
   
+  # Number of male deaths value box ----------------------------------------------
+  # Note: I used renderUI intead of renderValueBox because width only works in prior
+  output$sex.deaths <- renderUI({
+    ds <- deaths_subset()
+    # Get the count of deaths for both sexes
+    sex.counts <- table(ds$Sex)
+    # Extract the count of deaths for males to display in dashboard
+    male.count <- sex.counts[names(sex.counts) == "Male"]
+    valueBox(value = male.count, subtitle = "Male Deaths", color = "green", width = 3)
+  })
+  
+  # Keep watch on the user changing the fill on the barplot. Return which column the user selected
   fill.choice <- reactive({
     if (is.null(input$choose.fill)) { return ("")}
     if (input$choose.fill == "Tortured") {
@@ -228,6 +234,16 @@ server <- function(input, output) {
         labs(x = "Journalist Nationality", y = "Number of Journalist Deaths",
              title = "Journalist Death by Nationality", fill = input$choose.fill)
       })
+  
+  # Number of journalists taken captive value box ------------------------------
+  output$captive <- renderValueBox({
+    ds <- deaths_subset()
+    # Get the count of journalists taken captive and those not taken captive
+    captive <- table(str_trim(ds$`Taken Captive`))
+    # Extract the count of only those taken captive to display in dashboard
+    count.captive <- captive[names(captive) == "Yes"]
+    valueBox(value = count.captive, subtitle = "Journalists Taken Captive Before Death", color = "green")
+  })
   
   output$source.by.coverage <- renderPlot({
     ds <- deaths_subset()
