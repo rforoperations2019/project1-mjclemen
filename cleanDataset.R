@@ -5,6 +5,12 @@ deaths <- read.csv("JournalistDeaths.csv", stringsAsFactors=F, na.strings=c("","
 deaths$Tortured <- as.character(deaths$Tortured)
 for (i in 1:nrow(deaths)) {
   deaths[i,17] <- gsub(x = deaths[i, 17], pattern = "\n", replacement = "")
+  if (grepl(",", deaths[i,6])) {
+    deaths[i, 6] <- substr(deaths[i,6], 1, regexpr(",", deaths[i,6])-1)
+  }
+  if (grepl("/", deaths[i,6])) {
+    deaths[i, 6] <- substr(deaths[i,6], 1, regexpr("/", deaths[i,6])-1)
+  }
 }
 
 # Omit records containing null values
