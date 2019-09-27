@@ -126,7 +126,7 @@ server <- function(input, output) {
     ds <- deaths_subset()
     captive <- table(str_trim(ds$`Taken Captive`))
     count.captive <- captive[names(captive) == "Yes"]
-    infoBox(title = "Taken captive by an organization before death:", value = count.captive, color = "green", width = 5)
+    infoBox(title = "Taken captive before death:", value = count.captive, color = "green", width = 5)
   })
   
   output$type.over.year <- renderPlot({
@@ -162,7 +162,7 @@ server <- function(input, output) {
     top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
     ggplot(ds, aes(x = Nationality)) + geom_bar() +
       scale_x_discrete(limits = top.nationalities) +
-      labs(y = "Number of Journalist Deaths")
+      labs(y = "Number of Journalist Deaths", title = "Journalist Death by Nationality")
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
