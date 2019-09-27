@@ -27,9 +27,9 @@ app.sidebar <- dashboardSidebar(
   
   sidebarMenu(id = "tabs",
     
-    menuItem("Datatable", tabName = "datatable", icon = icon("th")),
-    menuItem("Country Stats", tabName = "country_stats", icon = icon("th")),
-    menuItem("Demographic Stats", tabName = "demographic_stats", icon = icon("th")),
+    menuItem("User Filtered Data", tabName = "datatable", icon = icon("table")),
+    menuItem("Place of Death", tabName = "location_stats", icon = icon("th")),
+    menuItem("Journalist Demographics", tabName = "demographic_stats", icon = icon("th")),
     menuItem("Hostage Stats", tabName = "hostage_stats", icon = icon("th")),
     
     # Select what type of death to plot ------------------------
@@ -63,7 +63,7 @@ app.body <- dashboardBody(
               # Show data table ---------------------------------------------
               dataTableOutput(outputId = "deathstable"))
             ),
-    tabItem(tabName = "country_stats",
+    tabItem(tabName = "location_stats",
             fluidRow(
               # Show info box ---------------------------------------------
               uiOutput(outputId = "country.deaths"),
@@ -136,19 +136,18 @@ server <- function(input, output) {
   # Plot the topic that the journalists covered over the years
   output$coverage.over.year <- renderPlot({
     ds <- deaths_subset()
-    ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Year of Death`, Coverage)
-                        ][,.(Coverage = V1, `Year of Death`)]
+    ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
+                        ][,.(Coverage = V1, `Country Killed`)]
     
     ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
-    ds_split$`Year of Death` <- as.integer(ds_split$`Year of Death`)
+    # ds_split$`Year of Death` <- as.integer(ds_split$`Year of Death`)
     
-    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Year of Death`)) +
+    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Country Killed`)) +
       geom_dotplot(binaxis='y', 
                    stackdir='center', 
                    dotsize = .5, 
                    fill="green") +
-      labs(x = "Journalists' Assignment Topic", y = "Year of Death", title = "Journalist Topic Coverage Over the Years") +
-      scale_y_continuous(breaks= pretty_breaks())
+      labs(x = "Journalists' Assignment Topic", y = "Country Killed", title = "Journalist Topic Coverage in relation to Place of Death")
   })
   
   # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
@@ -156,12 +155,15 @@ server <- function(input, output) {
     if (is.null(input$dotplot_hover)) {
       return("")
     } else {
-      year <- round(input$dotplot_hover$y)
-      paste0("You've selected the year: ", year)
+      country <- input$dotplot_hover$y
+      coverage <- input$dotplot_hover$y
+      paste0("You've selected the country: ", country)
+      br()
+      paste0("You've selected the journalist topic: ", coverage)
     }
   })
   
-  # barplot.fill <- renderUI({
+  # output$barplot.fill <- renderUI({
   #   radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
   #                choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
   # })
