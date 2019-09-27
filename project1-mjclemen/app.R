@@ -151,6 +151,7 @@ server <- function(input, output) {
       scale_y_continuous(breaks= pretty_breaks())
   })
   
+  # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
   output$dotplot.y.info <- renderText({
     if (is.null(input$dotplot_hover)) {
       return("")
