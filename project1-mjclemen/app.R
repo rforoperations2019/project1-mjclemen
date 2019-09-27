@@ -106,7 +106,7 @@ ui <- dashboardPage(
   sidebar = app.sidebar,
   body = app.body,
   # Set the header color
-  skin = "green"
+  skin = "black"
 )
 
 # Define server logic required to draw charts, datatables, and numeric based boxes
@@ -148,7 +148,7 @@ server <- function(input, output) {
     ds <- deaths_subset()
     # Get the number of deaths for each country, sort it, and extract the one with the highest count
     highest.country <- names(tail(sort(table(ds$`Country Killed`)), 1))
-    valueBox(value = highest.country, subtitle = "Has the Most Deaths", color = "green", width = 3)
+    valueBox(value = highest.country, subtitle = "Has the Most Deaths", color = "blue", width = 3)
   })
   
   # Plot the topic that the journalists covered over the years
@@ -160,7 +160,7 @@ server <- function(input, output) {
       geom_dotplot(binaxis='y',
                    stackdir='center',
                    dotsize = .5,
-                   fill="green") + 
+                   fill="blue") + 
       labs(x = "Journalists' Assignment Topic", y = "Country Killed",
            title = "Journalist Topic Coverage in relation to the Place of Death",
            subtitle = "Countries shown are the those with the most deaths")
@@ -227,7 +227,7 @@ server <- function(input, output) {
       # Find the 10 nationalities with the most deaths to plot on barplot
       top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
       ggplot(ds, aes(x = Nationality, fill = fill.choice())) + geom_bar() +
-        scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Reds") +
+        scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
         labs(x = "Journalist Nationality", y = "Number of Journalist Deaths",
              title = "Journalist Death by Nationality", fill = input$fill.choice)
       })
@@ -239,7 +239,7 @@ server <- function(input, output) {
     captive <- table(str_trim(ds$`Taken Captive`))
     # Extract the count of only those taken captive to display in dashboard
     count.captive <- captive[names(captive) == "Yes"]
-    valueBox(value = count.captive, subtitle = "Journalists Taken Captive Before Death", color = "green")
+    valueBox(value = count.captive, subtitle = "Journalists Taken Captive Before Death", color = "purple")
   })
   
   output$source.by.coverage <- renderPlot({
@@ -251,8 +251,8 @@ server <- function(input, output) {
     ds_split$`Source of Fire` <- as.factor(str_trim(ds_split$`Source of Fire`))
     
     ggplot(ds_split, aes(x = `Year of Death`)) +
-      geom_density(aes(fill=`Source of Fire`), alpha = 0.9, position = "stack") +
-      scale_fill_brewer(palette = "Accent") +
+      geom_density(aes(fill=`Source of Fire`), alpha = 0.2, position = "stack") +
+      scale_fill_brewer(palette = "Purples") +
       labs(title="Density of Deaths", 
            subtitle="Year of Death grouped by Source of Murder",
            x="Year",
