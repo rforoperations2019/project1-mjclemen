@@ -56,7 +56,6 @@ app.sidebar <- dashboardSidebar(
   )
 
 app.body <- dashboardBody(
-
   
   tabItems(
     tabItem(tabName = "datatable",
@@ -71,6 +70,9 @@ app.body <- dashboardBody(
     tabItem(tabName = "demographic_stats",
             # Show info box ---------------------------------------------
             uiOutput(outputId = "sex.deaths"),
+            # Show user input radio buttons to select how to fill the bar plot
+            uiOutput(outputId = "barplot.fill"),
+            # Show barplot, showing the number of deaths per journalist nationality
             plotOutput(outputId = "barplot.nationality")
             ),
     tabItem(tabName = "hostage_stats",
@@ -129,11 +131,7 @@ server <- function(input, output) {
     valueBox(value = count.captive, subtitle = "journalists taken captive before death", color = "green", width = 4)
   })
   
-  output$type.over.year <- renderPlot({
-    ds <- deaths_subset()
-    ggplot(ds, aes(x = ds$`Type of Death`, y = ds$`Year of Death`)) + geom_boxplot()
-  })
-  
+  # Plot the topic that the journalists covered over the years
   output$coverage.over.year <- renderPlot({
     ds <- deaths_subset()
     ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Year of Death`, Coverage)
@@ -143,7 +141,7 @@ server <- function(input, output) {
     ds_split$`Year of Death` <- as.integer(ds_split$`Year of Death`)
     
     ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Year of Death`)) + geom_boxplot() +
-      labs(x = "Journalists' Assignment Topic", y = "Year of Death")
+      labs(x = "Journalists' Assignment Topic", y = "Year of Death", title = "Journalist Topic Coverage Over the Years")
   })
   
   output$boxplot.y.info <- renderText({
@@ -155,14 +153,16 @@ server <- function(input, output) {
     }
   })
   
+  barplot.fill <- renderUI({
+    radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
+                 choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
+  })
+  
   output$barplot.nationality <- renderPlot({
     ds <- deaths_subset()
-    count.n <- ds %>%
-      arrange(Nationality) %>%
-      head(5)
     top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
-    ggplot(ds, aes(x = Nationality)) + geom_bar() +
-      scale_x_discrete(limits = top.nationalities) +
+    ggplot(ds, aes(x = Nationality, fill = barplot.fill())) + geom_bar() +
+      scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
       labs(y = "Number of Journalist Deaths", title = "Journalist Death by Nationality")
   })
    
