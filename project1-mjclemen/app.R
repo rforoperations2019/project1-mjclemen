@@ -67,6 +67,7 @@ app.body <- dashboardBody(
             fluidRow(
               # Show info box ---------------------------------------------
               uiOutput(outputId = "country.deaths"),
+              textOutput(outputId = "dotplot.x.info"),
               textOutput(outputId = "dotplot.y.info")),
             fluidRow(
               plotOutput(outputId = "coverage.over.year", hover = "dotplot_hover"))
@@ -140,7 +141,7 @@ server <- function(input, output) {
                         ][,.(Coverage = V1, `Country Killed`)]
     
     ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
-    # ds_split$`Year of Death` <- as.integer(ds_split$`Year of Death`)
+    ds_split$`Country Killed` <- as.factor(str_trim(ds_split$`Country Killed`))
     
     ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Country Killed`)) +
       geom_dotplot(binaxis='y', 
@@ -155,10 +156,28 @@ server <- function(input, output) {
     if (is.null(input$dotplot_hover)) {
       return("")
     } else {
-      country <- input$dotplot_hover$y
-      coverage <- input$dotplot_hover$y
+      ds <- deaths_subset()
+      ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
+                            ][,.(Coverage = V1, `Country Killed`)]
+      ds_split$`Country Killed` <- as.factor(str_trim(ds_split$`Country Killed`))
+      country.levels <- levels(ds_split$`Country Killed`)
+      country <- country.levels[round(input$dotplot_hover$y)]
       paste0("You've selected the country: ", country)
-      br()
+    }
+  })
+  
+  # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
+  output$dotplot.x.info <- renderText({
+    if (is.null(input$dotplot_hover)) {
+      return("")
+    } else {
+      ds <- deaths_subset()
+      ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
+                            ][,.(Coverage = V1, `Country Killed`)]
+      
+      ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
+      coverage.levels <- levels(ds_split$Coverage)
+      coverage <- coverage.levels[round(input$dotplot_hover$x)]
       paste0("You've selected the journalist topic: ", coverage)
     }
   })
