@@ -207,13 +207,27 @@ server <- function(input, output) {
     }
   })
   
-  output$barplot.nationality <- renderPlot({
-    ds <- deaths_subset()
-    top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
-    ggplot(ds, aes(x = Nationality, fill = factor(input$choose.fill))) + geom_bar() +
-      scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
-      labs(x = "Journalist Nationality", y = "Number of Journalist Deaths", title = "Journalist Death by Nationality")
+  fill.choice <- reactive({
+    if (is.null(input$choose.fill)) { return ("")}
+    if (input$choose.fill == "Tortured") {
+      return (deaths_subset()$Tortured)
+    } else if (input$choose.fill == "Threatened") {
+      return (deaths_subset()$Threatened)
+    } else {
+      return (deaths_subset()$Freelance)
+    }
   })
+  
+  output$barplot.nationality <- renderPlot({
+      ds <- deaths_subset()
+      top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
+      
+      cat(class(ds$Nationality))
+      ggplot(ds, aes(x = Nationality, fill = fill.choice())) + geom_bar() +
+        scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
+        labs(x = "Journalist Nationality", y = "Number of Journalist Deaths",
+             title = "Journalist Death by Nationality", fill = input$choose.fill)
+      })
   
   output$source.by.coverage <- renderPlot({
     ds <- deaths_subset()
