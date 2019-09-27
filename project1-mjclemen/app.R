@@ -227,7 +227,7 @@ server <- function(input, output) {
       # Find the 10 nationalities with the most deaths to plot on barplot
       top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
       ggplot(ds, aes(x = Nationality, fill = fill.choice())) + geom_bar() +
-        scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
+        scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Reds") +
         labs(x = "Journalist Nationality", y = "Number of Journalist Deaths",
              title = "Journalist Death by Nationality", fill = input$fill.choice)
       })
@@ -251,7 +251,8 @@ server <- function(input, output) {
     ds_split$`Source of Fire` <- as.factor(str_trim(ds_split$`Source of Fire`))
     
     ggplot(ds_split, aes(x = `Year of Death`)) +
-      geom_density(aes(fill=`Source of Fire`), alpha=0.8, geom = "line") +
+      geom_density(aes(fill=`Source of Fire`), alpha = 0.9, position = "stack") +
+      scale_fill_brewer(palette = "Accent") +
       labs(title="Density of Deaths", 
            subtitle="Year of Death grouped by Source of Murder",
            x="Year",
