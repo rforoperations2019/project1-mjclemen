@@ -114,6 +114,22 @@ server <- function(input, output) {
      deaths <- filter(deaths,grepl(input$selected.medium,Medium))
   })
   
+  # Take the user filtered data and split up comma separated coverages in records
+  # Match these split records to the country the journalist was killed
+  ds.split.on.coverage <- reactive({
+    ds.coverage <- setDT(deaths_subset())[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE),
+                           by = .(`Country Killed`, Coverage)
+                           ][,.(Coverage = V1, `Country Killed`)]
+    
+    # Have both columns be factors to ensure levels for plotting
+    ds.coverage$Coverage <- as.factor(str_trim(ds.coverage$Coverage))
+    ds.coverage$`Country Killed` <- as.factor(str_trim(ds.coverage$`Country Killed`))
+    
+    top.countries <- names(tail(sort(table(ds.coverage$`Country Killed`)), 20))
+    ds.coverage <- ds.coverage %>% filter(`Country Killed` %in% top.countries)
+    
+  })
+  
   # Country with the most deaths value box ----------------------------------------------
   # Note: I used renderUI intead of renderValueBox because width only works in prior
   output$country.deaths <- renderUI({
@@ -146,34 +162,16 @@ server <- function(input, output) {
   
   # Plot the topic that the journalists covered over the years
   output$coverage.per.country <- renderPlot({
-    ds <- deaths_subset()
-    ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
-                        ][,.(Coverage = V1, `Country Killed`)]
+    # Read in the reactive subset that has been split on coverage
+    ds.coverage <- ds.split.on.coverage()
     
-    ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
-    ds_split$`Country Killed` <- as.factor(str_trim(ds_split$`Country Killed`))
-    
-    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Country Killed`)) +
-      geom_dotplot(binaxis='y', 
-                   stackdir='center', 
-                   dotsize = .5, 
-                   fill="green") +
-      labs(x = "Journalists' Assignment Topic", y = "Country Killed", title = "Journalist Topic Coverage in relation to Place of Death")
-  })
-  
-  # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
-  output$dotplot.y.info <- renderText({
-    if (is.null(input$dotplot_hover)) {
-      return("")
-    } else {
-      ds <- deaths_subset()
-      ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
-                            ][,.(Coverage = V1, `Country Killed`)]
-      ds_split$`Country Killed` <- as.factor(str_trim(ds_split$`Country Killed`))
-      country.levels <- levels(ds_split$`Country Killed`)
-      country <- country.levels[round(input$dotplot_hover$y)]
-      paste0("You've selected the country: ", country)
-    }
+    ggplot(ds.coverage, aes(x = ds.coverage$Coverage, y = ds.coverage$`Country Killed`)) +
+      geom_dotplot(binaxis='y',
+                   stackdir='center',
+                   dotsize = .5,
+                   fill="green") + 
+      labs(x = "Journalists' Assignment Topic", y = "Country Killed",
+           title = "Journalist Topic Coverage in relation to the Top 30 Places of Death")
   })
   
   # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
@@ -192,6 +190,21 @@ server <- function(input, output) {
     }
   })
   
+  # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
+  output$dotplot.y.info <- renderText({
+    if (is.null(input$dotplot_hover)) {
+      return("")
+    } else {
+      ds <- deaths_subset()
+      ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
+                            ][,.(Coverage = V1, `Country Killed`)]
+      ds_split$`Country Killed` <- as.factor(str_trim(ds_split$`Country Killed`))
+      country.levels <- levels(ds_split$`Country Killed`)
+      country <- country.levels[round(input$dotplot_hover$y)]
+      paste0("You've selected the country: ", country)
+    }
+  })
+  
   # output$barplot.fill <- renderUI({
   #   radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
   #                choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
@@ -203,11 +216,6 @@ server <- function(input, output) {
     ggplot(ds, aes(x = Nationality, fill = Freelance)) + geom_bar() +
       scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
       labs(x = "Journalist Nationality", y = "Number of Journalist Deaths", title = "Journalist Death by Nationality")
-  })
-   
-  # Display a data table that shows all of the journalist deaths from 1992 to 2019
-  output$deathstable <- renderDataTable({
-    datatable(data = deaths_subset(), options = list(orderClasses = TRUE, autoWidth = FALSE))
   })
   
   output$source.by.coverage <- renderPlot({
@@ -226,7 +234,12 @@ server <- function(input, output) {
            y = "Density (Deaths)",
            fill="Source of Murder")
   })
-
+  
+  # Display a data table that shows all of the journalist deaths from 1992 to 2019
+  output$deathstable <- renderDataTable({
+    datatable(data = deaths_subset(), options = list(orderClasses = TRUE, autoWidth = FALSE))
+  })
+  
 }
 
 # Run the application 
