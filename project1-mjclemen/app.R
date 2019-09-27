@@ -64,27 +64,29 @@ app.body <- dashboardBody(
               dataTableOutput(outputId = "deathstable"))
             ),
     tabItem(tabName = "country_stats",
-            # Show info box ---------------------------------------------
-            uiOutput(outputId = "country.deaths")
+            fluidRow(
+              # Show info box ---------------------------------------------
+              uiOutput(outputId = "country.deaths"),
+              textOutput(outputId = "dotplot.y.info")),
+            fluidRow(
+              plotOutput(outputId = "coverage.over.year", hover = "dotplot_hover"))
             ),
     tabItem(tabName = "demographic_stats",
             # Show info box ---------------------------------------------
             uiOutput(outputId = "sex.deaths"),
             # Show user input radio buttons to select how to fill the bar plot
-            uiOutput(outputId = "barplot.fill"),
+            # uiOutput(outputId = "barplot.fill"),
             # Show barplot, showing the number of deaths per journalist nationality
             plotOutput(outputId = "barplot.nationality")
             ),
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
             fluidRow(
-              uiOutput(outputId = "captive"),
-              textOutput(outputId = "boxplot.y.info")),
-            fluidRow(
-              plotOutput(outputId = "coverage.over.year", click = "boxplot_click"))
-            )
+              uiOutput(outputId = "captive")
+              )
     )
   )
+)
 
 # Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- dashboardPage(
@@ -111,16 +113,16 @@ server <- function(input, output) {
   # Country with the most deaths info box ----------------------------------------------
   output$country.deaths <- renderUI({
     ds <- deaths_subset()
-    highest <- names(tail(sort(table(ds$`Country Killed`)), 1))
-    infoBox("Country with the most deaths", value = highest, color = "green", width = 5)
+    highest.country <- names(tail(sort(table(ds$`Country Killed`)), 1))
+    infoBox("Country with the most deaths", value = highest.country, color = "green", width = 5)
   })
   
   # Number of male deaths info box ----------------------------------------------
   output$sex.deaths <- renderUI({
     ds <- deaths_subset()
-    sex <- table(ds$Sex)
-    male.count <- sex[names(sex) == "Male"]
-    infoBox("Number of Male Deaths:", value = male.count, color = "green", width = 5)
+    sex.counts <- table(ds$Sex)
+    male.count <- sex.counts[names(sex.counts) == "Male"]
+    valueBox(value = male.count, subtitle = "Male Deaths", color = "green", width = 3)
   })
   
   # Count how many were taken captive and put in value box ------------------------------
@@ -140,30 +142,35 @@ server <- function(input, output) {
     ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
     ds_split$`Year of Death` <- as.integer(ds_split$`Year of Death`)
     
-    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Year of Death`)) + geom_boxplot() +
-      labs(x = "Journalists' Assignment Topic", y = "Year of Death", title = "Journalist Topic Coverage Over the Years")
+    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Year of Death`)) +
+      geom_dotplot(binaxis='y', 
+                   stackdir='center', 
+                   dotsize = .5, 
+                   fill="green") +
+      labs(x = "Journalists' Assignment Topic", y = "Year of Death", title = "Journalist Topic Coverage Over the Years") +
+      scale_y_continuous(breaks= pretty_breaks())
   })
   
-  output$boxplot.y.info <- renderText({
-    if (is.null(input$boxplot_click$y)) {
+  output$dotplot.y.info <- renderText({
+    if (is.null(input$dotplot_hover)) {
       return("")
     } else {
-      year <- round(input$boxplot_click$y)
-      HTML("You've selected the year: ", year)
+      year <- round(input$dotplot_hover$y)
+      paste0("You've selected the year: ", year)
     }
   })
   
-  barplot.fill <- renderUI({
-    radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
-                 choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
-  })
+  # barplot.fill <- renderUI({
+  #   radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
+  #                choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
+  # })
   
   output$barplot.nationality <- renderPlot({
     ds <- deaths_subset()
     top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
-    ggplot(ds, aes(x = Nationality, fill = barplot.fill())) + geom_bar() +
+    ggplot(ds, aes(x = Nationality, fill = Freelance)) + geom_bar() +
       scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
-      labs(y = "Number of Journalist Deaths", title = "Journalist Death by Nationality")
+      labs(x = "Journalist Nationality", y = "Number of Journalist Deaths", title = "Journalist Death by Nationality")
   })
    
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
