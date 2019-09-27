@@ -32,11 +32,17 @@ app.sidebar <- dashboardSidebar(
     menuItem("Journalist Demographics", tabName = "demographic_stats", icon = icon("th")),
     menuItem("Hostage Stats", tabName = "hostage_stats", icon = icon("th")),
     
+    conditionalPanel(
+      condition = "input.tabs == 'demographic_stats'",
+      selectInput("fill.choice", "Choose how to fill the Nationality Barplot:", 
+                  choices = c("Freelance", "Threatened", "Tortured"))
+    ),
+    
     # Select what type of death to plot ------------------------
     checkboxGroupInput(inputId = "selected.impunity",
                        label = "Select whether impunity was granted to view:",
                        choices = sort(unique(deaths$`Impunity  for Murder`)),
-                       selected = "Yes"),
+                       selected = c("No", "Yes")),
     
     # Select what type of medium to plot ------------------------
     radioButtons(inputId = "selected.medium",
@@ -52,13 +58,7 @@ app.sidebar <- dashboardSidebar(
                 value = c(1995,2019),
                 step = 1,
                 sep = "")
-    ),
-  
-  conditionalPanel(
-    condition = "input$sidebar == 'demographic_stats'",
-    selectInput("fill.choice", "Choose how to fill the Nationality Barplot:", 
-                choices = c("Freelance", "Threatened", "Tortured"))
-  )
+    )
   )
 
 app.body <- dashboardBody(
@@ -81,11 +81,7 @@ app.body <- dashboardBody(
     tabItem(tabName = "demographic_stats",
             fluidRow(
               # Show info box ---------------------------------------------
-              uiOutput(outputId = "sex.deaths"),
-              textOutput(outputId = "hi"),
-              # Show user input radio buttons to select how to fill the bar plot
-              radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
-                           choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
+              uiOutput(outputId = "sex.deaths")
             ),
             fluidRow(
               # Show barplot, showing the number of deaths per journalist nationality
@@ -214,25 +210,26 @@ server <- function(input, output) {
   
   # Keep watch on the user changing the fill on the barplot. Return which column the user selected
   fill.choice <- reactive({
-    if (is.null(input$choose.fill)) { return ("")}
-    if (input$choose.fill == "Tortured") {
+    if (is.null(input$fill.choice)) { return ("")}
+    if (input$fill.choice == "Tortured") {
       return (deaths_subset()$Tortured)
-    } else if (input$choose.fill == "Threatened") {
+    } else if (input$fill.choice == "Threatened") {
       return (deaths_subset()$Threatened)
     } else {
       return (deaths_subset()$Freelance)
     }
   })
   
+  # Plot the number of deaths per nationality
+  # Call the function to read in user's selection of how to fill the barplot
   output$barplot.nationality <- renderPlot({
       ds <- deaths_subset()
+      # Find the 10 nationalities with the most deaths to plot on barplot
       top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
-      
-      cat(class(ds$Nationality))
       ggplot(ds, aes(x = Nationality, fill = fill.choice())) + geom_bar() +
         scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
         labs(x = "Journalist Nationality", y = "Number of Journalist Deaths",
-             title = "Journalist Death by Nationality", fill = input$choose.fill)
+             title = "Journalist Death by Nationality", fill = input$fill.choice)
       })
   
   # Number of journalists taken captive value box ------------------------------
