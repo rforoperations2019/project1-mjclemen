@@ -70,7 +70,7 @@ app.body <- dashboardBody(
               textOutput(outputId = "dotplot.x.info"),
               textOutput(outputId = "dotplot.y.info")),
             fluidRow(
-              plotOutput(outputId = "coverage.over.year", hover = "dotplot_hover"))
+              plotOutput(outputId = "coverage.per.country", hover = "dotplot_hover"))
             ),
     tabItem(tabName = "demographic_stats",
             # Show info box ---------------------------------------------
@@ -83,7 +83,7 @@ app.body <- dashboardBody(
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
             fluidRow(
-              uiOutput(outputId = "captive")
+              valueBoxOutput(outputId = "captive")
               )
     )
   )
@@ -111,31 +111,38 @@ server <- function(input, output) {
      deaths <- filter(deaths,grepl(input$selected.medium,Medium))
   })
   
-  # Country with the most deaths info box ----------------------------------------------
+  # Country with the most deaths value box ----------------------------------------------
+  # Note: I used renderUI intead of renderValueBox because width only works in prior
   output$country.deaths <- renderUI({
     ds <- deaths_subset()
+    # Get the number of deaths for each country, sort it, and extract the one with the highest count
     highest.country <- names(tail(sort(table(ds$`Country Killed`)), 1))
-    infoBox("Country with the most deaths", value = highest.country, color = "green", width = 5)
+    valueBox(value = highest.country, subtitle = "Has the Most Deaths", color = "green", width = 3)
   })
   
-  # Number of male deaths info box ----------------------------------------------
+  # Number of male deaths value box ----------------------------------------------
+  # Note: I used renderUI intead of renderValueBox because width only works in prior
   output$sex.deaths <- renderUI({
     ds <- deaths_subset()
+    # Get the count of deaths for both sexes
     sex.counts <- table(ds$Sex)
+    # Extract the count of deaths for males to display in dashboard
     male.count <- sex.counts[names(sex.counts) == "Male"]
     valueBox(value = male.count, subtitle = "Male Deaths", color = "green", width = 3)
   })
   
-  # Count how many were taken captive and put in value box ------------------------------
-  output$captive <- renderUI({
+  # Number of journalists taken captive value box ------------------------------
+  output$captive <- renderValueBox({
     ds <- deaths_subset()
+    # Get the count of journalists taken captive and those not taken captive
     captive <- table(str_trim(ds$`Taken Captive`))
+    # Extract the count of only those taken captive to display in dashboard
     count.captive <- captive[names(captive) == "Yes"]
-    valueBox(value = count.captive, subtitle = "journalists taken captive before death", color = "green", width = 4)
+    valueBox(value = count.captive, subtitle = "Journalists Taken Captive Before Death", color = "green")
   })
   
   # Plot the topic that the journalists covered over the years
-  output$coverage.over.year <- renderPlot({
+  output$coverage.per.country <- renderPlot({
     ds <- deaths_subset()
     ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
                         ][,.(Coverage = V1, `Country Killed`)]
