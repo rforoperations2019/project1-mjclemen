@@ -76,7 +76,8 @@ app.body <- dashboardBody(
             # Show info box ---------------------------------------------
             uiOutput(outputId = "sex.deaths"),
             # Show user input radio buttons to select how to fill the bar plot
-            # uiOutput(outputId = "barplot.fill"),
+            radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
+                           choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance"),
             # Show barplot, showing the number of deaths per journalist nationality
             plotOutput(outputId = "barplot.nationality")
             ),
@@ -206,15 +207,10 @@ server <- function(input, output) {
     }
   })
   
-  # output$barplot.fill <- renderUI({
-  #   radioButtons(inputId = "choose.fill", label = "Choose How to Fill the Bar Plot",
-  #                choices = c("Freelance", "Tortured", "Threatened"), selected = "Freelance")
-  # })
-  
   output$barplot.nationality <- renderPlot({
     ds <- deaths_subset()
     top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
-    ggplot(ds, aes(x = Nationality, fill = Freelance)) + geom_bar() +
+    ggplot(ds, aes(x = Nationality, fill = factor(input$choose.fill))) + geom_bar() +
       scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
       labs(x = "Journalist Nationality", y = "Number of Journalist Deaths", title = "Journalist Death by Nationality")
   })
@@ -228,7 +224,7 @@ server <- function(input, output) {
     ds_split$`Source of Fire` <- as.factor(str_trim(ds_split$`Source of Fire`))
     
     ggplot(ds_split, aes(x = `Year of Death`)) +
-      geom_density(aes(fill=`Source of Fire`), alpha=0.8) +
+      geom_density(aes(fill=`Source of Fire`), alpha=0.8, geom = "line") +
       labs(title="Density of Deaths", 
            subtitle="Year of Death grouped by Source of Murder",
            x="Year",
