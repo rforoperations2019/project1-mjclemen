@@ -171,7 +171,8 @@ server <- function(input, output) {
                    dotsize = .5,
                    fill="green") + 
       labs(x = "Journalists' Assignment Topic", y = "Country Killed",
-           title = "Journalist Topic Coverage in relation to the Top 30 Places of Death")
+           title = "Journalist Topic Coverage in relation to the Place of Death",
+           subtitle = "Countries shown are the those with the most deaths")
   })
   
   # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
@@ -237,7 +238,8 @@ server <- function(input, output) {
   
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
   output$deathstable <- renderDataTable({
-    datatable(data = deaths_subset(), options = list(orderClasses = TRUE, autoWidth = FALSE))
+    datatable(data = deaths_subset(), options = list(orderClasses = TRUE, autoWidth = FALSE, scrollX = TRUE,
+                                                     pageLength = 5))
   })
   
 }
