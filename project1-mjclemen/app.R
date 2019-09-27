@@ -126,7 +126,7 @@ server <- function(input, output) {
     ds <- deaths_subset()
     captive <- table(str_trim(ds$`Taken Captive`))
     count.captive <- captive[names(captive) == "Yes"]
-    infoBox(title = "Taken captive before death:", value = count.captive, color = "green", width = 5)
+    valueBox(value = count.captive, subtitle = "journalists taken captive before death", color = "green", width = 4)
   })
   
   output$type.over.year <- renderPlot({
@@ -142,7 +142,8 @@ server <- function(input, output) {
     ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
     ds_split$`Year of Death` <- as.integer(ds_split$`Year of Death`)
     
-    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Year of Death`)) + geom_boxplot()
+    ggplot(ds_split, aes(x = ds_split$Coverage, y = ds_split$`Year of Death`)) + geom_boxplot() +
+      labs(x = "Journalists' Assignment Topic", y = "Year of Death")
   })
   
   output$boxplot.y.info <- renderText({
