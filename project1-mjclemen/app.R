@@ -35,7 +35,18 @@ app.sidebar <- dashboardSidebar(
     conditionalPanel(
       condition = "input.tabs == 'demographic_stats'",
       selectInput("fill.choice", "Choose how to fill the Nationality Barplot:", 
-                  choices = c("Freelance", "Threatened", "Tortured"))
+                  choices = c("Worked Freelance" = "Freelance",
+                              "Threatened before Death" = "Threatened",
+                              "Tortured before Death" = "Tortured"))
+    ),
+    
+    conditionalPanel(
+      condition = "input.tabs == 'hostage_stats'",
+      sliderInput(inputId = "alpha.choice",
+                  label = "Select the bandwidth for the density plot:",
+                  min = .4,
+                  max = 1,
+                  value = .4)
     ),
     
     # Select what type of death to plot ------------------------
@@ -175,9 +186,9 @@ server <- function(input, output) {
                    stackdir='center',
                    dotsize = .5,
                    fill="blue") + 
-      labs(x = "Journalists' Assignment Topic", y = "Country Killed",
-           title = "Journalist Topic Coverage in relation to the Place of Death",
-           subtitle = "Countries shown are the those with the most deaths")
+      labs(x = "Journalist Assignment Topic", y = "Country Killed",
+           title = "Frequency of Journalist Assignment Topic in Place of Death",
+           subtitle = "Countries with the most deaths are shown")
   })
   
   # Make dotplot interactive by adding hover feature. When hovering over the dotplot, the year will be displayed to user
@@ -265,7 +276,7 @@ server <- function(input, output) {
     ds_split$`Source of Fire` <- as.factor(str_trim(ds_split$`Source of Fire`))
     
     ggplot(ds_split, aes(x = `Year of Death`)) +
-      geom_density(aes(fill=`Source of Fire`), alpha = 0.2, position = "stack") +
+      geom_density(aes(fill=`Source of Fire`), alpha = input$alpha.choice, position = "stack", adjust = 2) + 
       scale_fill_brewer(palette = "Purples") +
       labs(title="Density of Deaths", 
            subtitle="Year of Death grouped by Source of Murder",
@@ -277,7 +288,7 @@ server <- function(input, output) {
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
   output$deathstable <- renderDataTable({
     datatable(data = deaths_subset(), options = list(orderClasses = TRUE, autoWidth = FALSE, scrollX = TRUE,
-                                                     pageLength = 5))
+                                                     pageLength = 5), class = 'cell-border stripe')
   })
   
 }
