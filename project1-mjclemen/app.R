@@ -35,7 +35,7 @@ app.sidebar <- dashboardSidebar(
     menuItem("User Filtered Data", tabName = "datatable", icon = icon("fas fa-table")),
     menuItem("Place of Death", tabName = "location_stats", icon = icon("fas fa-globe-americas")),
     menuItem("Journalist Demographics", tabName = "demographic_stats", icon = icon("fas fa-id-card")),
-    menuItem("Murder Stats", tabName = "murder_stats", icon = icon("fas fa-dizzy")),
+    menuItem("Details of Murder", tabName = "murder_stats", icon = icon("fas fa-dizzy")),
     
     # When the user is looking at the demographic tab, they will be given a chance to interact with the barplot
     conditionalPanel(
