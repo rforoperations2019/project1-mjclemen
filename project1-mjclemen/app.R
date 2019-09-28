@@ -88,7 +88,7 @@ app.body <- dashboardBody(
                      # Show data table filtered based on user input -------------------------
                      box(title = "Selected Journalist Deaths Data",
                          dataTableOutput(outputId = "deathstable"),
-                         width = 13)
+                         width = 12)
               )
             ),
     tabItem(tabName = "location_stats",
@@ -311,7 +311,8 @@ server <- function(input, output) {
   # Display a data table that shows all of the journalist deaths from 1992 to 2019
   output$deathstable <- renderDataTable({
     datatable(data = deathsSubset(), options = list(orderClasses = TRUE, autoWidth = FALSE, scrollX = TRUE,
-                                                     pageLength = 5), class = 'cell-border stripe')
+                                                     pageLength = 5),
+              class = 'cell-border stripe', rownames = FALSE)
   })
   
 }
