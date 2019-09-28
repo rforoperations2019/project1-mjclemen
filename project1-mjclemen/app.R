@@ -178,7 +178,7 @@ server <- function(input, output) {
     ds <- deathsSubset()
     # Get the number of deaths for each country, sort it, and extract the one with the highest count
     highest.country <- names(tail(sort(table(ds$`Country Killed`)), 1))
-    valueBox(value = highest.country, subtitle = "Has the Most Deaths", color = "blue", width = 3)
+    valueBox(value = highest.country, subtitle = "Has the Most Deaths", color = "blue", width = 4)
   })
   
   # Plot the journalist assignment topic over the years --------------------------------------------------
@@ -236,6 +236,9 @@ server <- function(input, output) {
     sex.counts <- table(ds$Sex)
     # Extract the count of deaths for males to display in dashboard
     male.count <- sex.counts[names(sex.counts) == "Male"]
+    if (length(male.count) == 0) {
+      male.count <- 0
+    }
     valueBox(value = male.count, subtitle = "Male Deaths", color = "green", width = 3)
   })
   
@@ -270,6 +273,9 @@ server <- function(input, output) {
     captive <- table(str_trim(ds$`Taken Captive`))
     # Extract the count of only those taken captive to display in dashboard -------------------------------
     count.captive <- captive[names(captive) == "Yes"]
+    if (length(count.captive) == 0) {
+      count.captive <- 0
+    }
     valueBox(value = count.captive, subtitle = "Journalists Taken Captive Before Death", color = "purple")
   })
   
