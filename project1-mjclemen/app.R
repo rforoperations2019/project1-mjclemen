@@ -42,11 +42,11 @@ app.sidebar <- dashboardSidebar(
     
     conditionalPanel(
       condition = "input.tabs == 'hostage_stats'",
-      sliderInput(inputId = "alpha.choice",
-                  label = "Select the bandwidth for the density plot:",
-                  min = .4,
-                  max = 1,
-                  value = .4)
+      sliderInput(inputId = "adjust.choice",
+                  label = "Adjust the bandwidth to get a more local or more global view:",
+                  min = 1,
+                  max = 6,
+                  value = 3)
     ),
     
     # Select what type of death to plot ------------------------
@@ -164,7 +164,7 @@ server <- function(input, output) {
     ds.coverage$`Country Killed` <- as.factor(str_trim(ds.coverage$`Country Killed`))
     
     top.countries <- names(tail(sort(table(ds.coverage$`Country Killed`)), 20))
-    ds.coverage <- ds.coverage %>% filter(`Country Killed` %in% top.countries)
+    ds.coverage <- filter(ds.coverage,`Country Killed` %in% top.countries)
     
   })
   
@@ -180,9 +180,9 @@ server <- function(input, output) {
   # Plot the topic that the journalists covered over the years
   output$coverage.per.country <- renderPlot({
     # Read in the reactive subset that has been split on coverage
-    ds.coverage <- ds.split.on.coverage()
+    ds <- ds.split.on.coverage()
     
-    ggplot(ds.coverage, aes(x = ds.coverage$Coverage, y = ds.coverage$`Country Killed`)) +
+    ggplot(ds, aes(x = ds$Coverage, y = ds$`Country Killed`)) +
       geom_dotplot(binaxis='y',
                    stackdir='center',
                    dotsize = .5,
@@ -198,10 +198,6 @@ server <- function(input, output) {
       return("")
     } else {
       ds <- ds.split.on.coverage()
-      # ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
-      #                       ][,.(Coverage = V1, `Country Killed`)]
-      # 
-      # ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
       coverage.levels <- levels(ds$Coverage)
       coverage <- coverage.levels[round(input$dotplot_hover$x)]
       paste0("You've selected the journalist topic: ", coverage)
@@ -213,15 +209,9 @@ server <- function(input, output) {
     if (is.null(input$dotplot_hover)) {
       return("")
     } else {
-      ds <- deaths_subset()
-      ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
-                            ][,.(Coverage = V1, `Country Killed`)]
-      ds_split$`Country Killed` <- as.factor(str_trim(ds_split$`Country Killed`))
-      
-      top.countries <- names(tail(sort(table(ds.coverage$`Country Killed`)), 20))
-      ds.coverage <- ds.coverage %>% filter(`Country Killed` %in% top.countries)
-      
-      country.levels <- levels(ds.coverage$`Country Killed`)
+      ds <- ds.split.on.coverage()
+      country.levels <- levels(ds$`Country Killed`)
+      print(country.levels)
       country <- country.levels[round(input$dotplot_hover$y)]
       paste0("You've selected the country: ", country)
     }
@@ -281,9 +271,9 @@ server <- function(input, output) {
     ds_split$`Source of Fire` <- as.factor(str_trim(ds_split$`Source of Fire`))
     
     ggplot(ds_split, aes(x = `Year of Death`)) +
-      geom_density(aes(fill=`Source of Fire`), alpha = input$alpha.choice, position = "stack", adjust = 2) + 
+      geom_density(aes(fill=`Source of Fire`), alpha = .4, position = "stack", adjust = input$adjust.choice) + 
       scale_fill_brewer(palette = "Purples") +
-      labs(title="Density of Deaths", 
+      labs(title="Distribution of Deaths over Time", 
            subtitle="Year of Death grouped by Source of Murder",
            x="Year",
            y = "Density (Deaths)",
