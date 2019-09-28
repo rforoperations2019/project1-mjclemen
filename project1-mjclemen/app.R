@@ -11,24 +11,24 @@ library(rlist)
 library(scales)
 library(data.table)
 
-# Read in the file on journalist deaths ------------------------------------------------------------------
+# Read in the file on journalist deaths ---------------------------------------------------
 deaths <- read.csv("JournalistDeaths.csv")
 
-# Rename column names that have "." separating words -----------------------------------------------------
+# Rename column names that have "." separating words --------------------------------------
 names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 
-# Place application title in header of dashboard ---------------------------------------------------------
+# Place application title in header of dashboard ------------------------------------------
 app.header <- dashboardHeader(
   title = "Journalist Killings 1992 - 2019", titleWidth = 300
   )
 
-# Place user inputs and tab options in a sidebar to be displayed in dashboard ----------------------------
+# Place user inputs and tab options in a sidebar to be displayed in dashboard
 app.sidebar <- dashboardSidebar(
-  # Change sidebar width to match the title width --------------------------------------------------------
+  # Change sidebar width to match the title width -----------------------------------------
   width = 300,
   
-  # Create four tab options to place the datatable, the 3 valueboxes, and 3 plots ------------------------
-  # Also place user input controls below the tab options -------------------------------------------------
+  # Create four tab options to place the datatable, the 3 valueboxes, and 3 plots
+  # Also place user input controls below the tab options ----------------------------------
   sidebarMenu(id = "tabs",
     
     menuItem("User Filtered Data", tabName = "datatable", icon = icon("fas fa-table")),
@@ -55,19 +55,19 @@ app.sidebar <- dashboardSidebar(
                   value = 3)
     ),
     
-    # Select whether impunity for the murder was granted to plot -----------------------------------------
+    # Select whether impunity for the murder was granted to plot -----------------------------
     checkboxGroupInput(inputId = "selected.impunity",
                        label = "Select whether impunity was granted to view:",
                        choices = sort(unique(deaths$`Impunity  for Murder`)),
                        selected = c("No", "Yes")),
     
-    # Select what type of medium to plot -----------------------------------------------------------------
+    # Select what type of medium to plot -----------------------------------------------------
     radioButtons(inputId = "selected.medium",
                  label = "Select what type of medium (of the journalist) to view:",
                  choices = c("Internet", "Print", "Radio", "Television"),
                  selected = "Television"),
     
-    # Select what years of data to plot ------------------------------------------------------------------
+    # Select what years of data to plot ------------------------------------------------------
     sliderInput(inputId = "selected.year",
                 label = "Select which year(s) to view:",
                 min = min(deaths$`Year of Death`),
@@ -78,42 +78,43 @@ app.sidebar <- dashboardSidebar(
     )
   )
 
-# Display 4 tabs: 1 containing the datatable and the other 3 each containing a valuebox and a plot -------
+# Display 4 tabs: 1 containing the datatable and the other 3 each containing a valuebox and a plot
 app.body <- dashboardBody(
   
   tabItems(
     tabItem(tabName = "datatable",
             fluidRow(
-              column(12,
-                     # Show data table filtered based on user input --------------------------------------
-                     dataTableOutput(outputId = "deathstable"))
+                     # Show data table filtered based on user input -------------------------
+                     box(title = "Selected Journalist Deaths Data",
+                         dataTableOutput(outputId = "deathstable"),
+                         width = 13)
               )
             ),
     tabItem(tabName = "location_stats",
             fluidRow(
               column(12,
-                     # Show info box depicting the country with the most deaths ---------------------------
+                     # Show info box depicting the country with the most deaths -------------
                      uiOutput(outputId = "country.deaths"),
                      textOutput(outputId = "dotplot.x.info"),
                      textOutput(outputId = "dotplot.y.info"))
               ),
             fluidRow(
               column(12,
-                     # Plot the journalist's coverage against where he/she was killed --------------------
-                     # Show the user what coverage and country he/she is hovering over -------------------
+                     # Plot the journalist's coverage against where he/she was killed
+                     # Show the user what coverage and country he/she is hovering over
                      plotOutput(outputId = "coverage.per.country", hover = "dotplot_hover"))
               )
             ),
     tabItem(tabName = "demographic_stats",
             fluidRow(
               column(12,
-                     # Show info box depicting the number of male deaths ---------------------------------
+                     # Show info box depicting the number of male deaths ---------------------
                      uiOutput(outputId = "sex.deaths")
               )
             ),
             fluidRow(
               column(12,
-                     # Show barplot, showing the number of deaths per journalist nationality -------------
+                     # Show barplot, showing the number of deaths per journalist nationality
                      plotOutput(outputId = "barplot.nationality")
                      )
               )
@@ -121,13 +122,14 @@ app.body <- dashboardBody(
     tabItem(tabName = "murder_stats",
             fluidRow(
               column(12,
-                     # Show info box depicting the number of jouranlists taken captive -------------------
+                     # Show info box depicting the number of jouranlists taken captive
                      valueBoxOutput(outputId = "captive")
                      )
               ),
             fluidRow(
               column(12,
-                     # Plot density plot to show death of the years, grouped by the source of murder------
+                     # Plot density plot to show death of the years
+                     # Grouped by the source of murder
                      plotOutput(outputId = "source.by.year")
                      )
               )
@@ -135,7 +137,7 @@ app.body <- dashboardBody(
     )
   )
 
-# Define UI for application that creates a dashboard on journalist deaths since 1992 ---------------------
+# Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- dashboardPage(
   header = app.header,
   sidebar = app.sidebar,
@@ -144,11 +146,11 @@ ui <- dashboardPage(
   skin = "black"
   )
 
-# Define server logic required to draw charts, datatables, and numeric based boxes -----------------------
+# Define server logic required to draw charts, datatables, and numeric based boxes
 server <- function(input, output) {
   
   # Create subset of deaths dataset to account for user input. Specifically, year range, selected medium
-  # of the journalist, and whether the murder was granted impunity ---------------------------------------
+  # of the journalist, and whether the murder was granted impunity ----------------
   deathsSubset <- reactive({
     deaths <- subset(deaths,
                      `Impunity  for Murder` %in% input$selected.impunity &
@@ -157,14 +159,14 @@ server <- function(input, output) {
      deaths <- filter(deaths,grepl(input$selected.medium,Medium))
   })
   
-  # Take the user filtered data and split up comma separated coverages in records ------------------------
-  # Match these split records to the country the journalist was killed -----------------------------------
+  # Take the user filtered data and split up comma separated coverages in records 
+  # Match these split records to the country the journalist was killed -------------
   dsSplitCoverage <- reactive({
     ds.coverage <- setDT(deathsSubset())[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE),
                            by = .(`Country Killed`, Coverage)
                            ][,.(Coverage = V1, `Country Killed`)]
     
-    # Have both columns be factors to ensure levels for plotting -----------------------------------------
+    # Have both columns be factors to ensure levels for plotting -------------------
     ds.coverage$Coverage <- as.factor(str_trim(ds.coverage$Coverage))
     ds.coverage$`Country Killed` <- as.factor(str_trim(ds.coverage$`Country Killed`))
     
@@ -172,8 +174,8 @@ server <- function(input, output) {
     ds.coverage <- filter(ds.coverage,`Country Killed` %in% top.countries)
   })
   
-  # Country with the most deaths value box ---------------------------------------------------------------
-  # Note: I used renderUI intead of renderValueBox because width only works in prior ---------------------
+  # Country with the most deaths value box -----------------------------------------
+  # Note: I used renderUI intead of renderValueBox because width only works in prior
   output$country.deaths <- renderUI({
     ds <- deathsSubset()
     # Get the number of deaths for each country, sort it, and extract the one with the highest count
@@ -181,11 +183,11 @@ server <- function(input, output) {
     valueBox(value = highest.country, subtitle = "Has the Most Deaths", color = "blue", width = 4)
   })
   
-  # Plot the journalist assignment topic over the years --------------------------------------------------
+  # Plot the journalist assignment topic over the years --------------------------
   output$coverage.per.country <- renderPlot({
-    # Read in the reactive subset that has been split on coverage ----------------------------------------
+    # Read in the reactive subset that has been split on coverage ----------------
     ds <- dsSplitCoverage()
-    # Drop levels after filtering out some categories, then re-factor the column -------------------------
+    # Drop levels after filtering out some categories, then re-factor the column 
     ds$`Country Killed` <- droplevels(ds$`Country Killed`)
     ds$`Country Killed` <- as.factor(str_trim(ds$`Country Killed`))
     
@@ -199,8 +201,8 @@ server <- function(input, output) {
            subtitle = "Countries with the most deaths are shown")
   })
   
-  # Make dotplot interactive by adding hover feature -----------------------------------------------------
-  # When hovering over the dotplot, the assignment topic will be displayed to user -----------------------
+  # Make dotplot interactive by adding hover feature ------------------------------
+  # When hovering over the dotplot, the assignment topic will be displayed to user
   output$dotplot.x.info <- renderText({
     if (is.null(input$dotplot_hover)) {
       return("")
@@ -212,8 +214,8 @@ server <- function(input, output) {
     }
   })
   
-  # Make dotplot interactive by adding hover feature ------------------------------------------------------
-  # When hovering over the dotplot, the country will be displayed to user ---------------------------------
+  # Make dotplot interactive by adding hover feature ------------------------------
+  # When hovering over the dotplot, the country will be displayed to user ---------
   output$dotplot.y.info <- renderText({
     if (is.null(input$dotplot_hover)) {
       return("")
@@ -228,8 +230,8 @@ server <- function(input, output) {
     }
   })
   
-  # Number of male deaths value box -----------------------------------------------------------------------
-  # Note: renderUI() used intead of renderValueBox() because width only works in prior --------------------
+  # Number of male deaths value box ----------------------------------------------
+  # Note: renderUI() used not renderValueBox() because width only works in prior
   output$sex.deaths <- renderUI({
     ds <- deathsSubset()
     # Get the count of deaths for both sexes
@@ -242,7 +244,8 @@ server <- function(input, output) {
     valueBox(value = male.count, subtitle = "Male Deaths", color = "green", width = 3)
   })
   
-  # Keep watch on the user changing the fill on the barplot. Return which column the user selected --------
+  # Keep watch on the user changing the fill on the barplot
+  # Return which column the user selected
   barplot.fill.choice <- reactive({
     if (is.null(input$fill.choice)) { return ("")}
     if (input$fill.choice == "Tortured") {
@@ -254,11 +257,11 @@ server <- function(input, output) {
     }
   })
   
-  # Plot the number of deaths per nationality -------------------------------------------------------------
-  # Call the function to read in user's selection of how to fill the barplot ------------------------------
+  # Plot the number of deaths per nationality ------------------------------------
+  # Call the function to read in user's selection of how to fill the barplot -----
   output$barplot.nationality <- renderPlot({
       ds <- deathsSubset()
-      # Find the 10 nationalities with the most deaths to plot on barplot ---------------------------------
+      # Find the 10 nationalities with the most deaths to plot on barplot --------
       top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
       ggplot(ds, aes(x = Nationality, fill = barplot.fill.choice())) + geom_bar(color = "black") +
         scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
@@ -266,12 +269,12 @@ server <- function(input, output) {
              title = "Journalist Death by Nationality", fill = input$fill.choice)
       })
   
-  # Number of journalists taken captive value box ---------------------------------------------------------
+  # Number of journalists taken captive value box ---------------------------------
   output$captive <- renderValueBox({
     ds <- deathsSubset()
-    # Get the count of journalists taken captive and those not taken captive ------------------------------
+    # Get the count of journalists taken captive and those not taken captive
     captive <- table(str_trim(ds$`Taken Captive`))
-    # Extract the count of only those taken captive to display in dashboard -------------------------------
+    # Extract the count of only those taken captive to display in dashboard
     count.captive <- captive[names(captive) == "Yes"]
     if (length(count.captive) == 0) {
       count.captive <- 0
@@ -279,7 +282,7 @@ server <- function(input, output) {
     valueBox(value = count.captive, subtitle = "Journalists Taken Captive Before Death", color = "purple")
   })
   
-  # Plot the number of deaths over the years, grouped by the Source of the Murder -------------------------
+  # Plot the number of deaths over the years, grouped by the Source of the Murder
   output$source.by.year <- renderPlot({
     ds <- deathsSubset()
     # Take the filtered data, split on Source of Fire (there are some comma separated values) and create a new dataframe
@@ -299,7 +302,7 @@ server <- function(input, output) {
            fill="Source of Murder")
   })
   
-  # Display a data table that shows all of the journalist deaths from 1992 to 2019 -------------------------
+  # Display a data table that shows all of the journalist deaths from 1992 to 2019
   output$deathstable <- renderDataTable({
     datatable(data = deathsSubset(), options = list(orderClasses = TRUE, autoWidth = FALSE, scrollX = TRUE,
                                                      pageLength = 5), class = 'cell-border stripe')
