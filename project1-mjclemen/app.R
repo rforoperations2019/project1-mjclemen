@@ -82,6 +82,8 @@ app.sidebar <- dashboardSidebar(
 # Display 4 tabs: 1 containing the datatable and the other 3 each containing a valuebox and a plot
 app.body <- dashboardBody(
   
+  theme = shinytheme("readable"),
+  
   tabItems(
     tabItem(tabName = "datatable",
             fluidRow(
@@ -140,12 +142,10 @@ app.body <- dashboardBody(
 
 # Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- dashboardPage(
-  fluidPage(
-    theme = shinytheme("readable")
-  ),
   header = app.header,
   sidebar = app.sidebar,
-  body = app.body
+  body = app.body,
+  skin = "black"
   )
 
 # Define server logic required to draw charts, datatables, and numeric based boxes
