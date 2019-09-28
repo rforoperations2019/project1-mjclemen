@@ -50,7 +50,7 @@ app.sidebar <- dashboardSidebar(
     conditionalPanel(
       condition = "input.tabs == 'murder_stats'",
       sliderInput(inputId = "adjust.choice",
-                  label = "Adjust the bandwidth to get a more local or more global view:",
+                  label = "Adjust the bandwidth of the Density Plot to get a more atomistic or holistic view:",
                   min = 1,
                   max = 6,
                   value = 3)
@@ -58,13 +58,13 @@ app.sidebar <- dashboardSidebar(
     
     # Select whether impunity for the murder was granted to plot -----------------------------
     checkboxGroupInput(inputId = "selected.impunity",
-                       label = "Select whether impunity was granted to view:",
+                       label = "Select whether impunity was granted:",
                        choices = sort(unique(deaths$`Impunity  for Murder`)),
                        selected = c("No", "Yes")),
     
     # Select what type of medium to plot -----------------------------------------------------
     radioButtons(inputId = "selected.medium",
-                 label = "Select what type of medium (of the journalist) to view:",
+                 label = "Select a type of medium (of the journalist):",
                  choices = c("Internet", "Print", "Radio", "Television"),
                  selected = "Television"),
     
