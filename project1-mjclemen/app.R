@@ -24,6 +24,7 @@ app.header <- dashboardHeader(
 
 # Place user inputs and tab options in a sidebar to be displayed in dashboard
 app.sidebar <- dashboardSidebar(
+  
   # Change sidebar width to match the title width -----------------------------------------
   width = 300,
   
@@ -139,11 +140,12 @@ app.body <- dashboardBody(
 
 # Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- dashboardPage(
+  fluidPage(
+    theme = shinytheme("readable")
+  ),
   header = app.header,
   sidebar = app.sidebar,
-  body = app.body,
-  # Set the header color
-  skin = "black"
+  body = app.body
   )
 
 # Define server logic required to draw charts, datatables, and numeric based boxes
