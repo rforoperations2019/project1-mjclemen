@@ -73,34 +73,46 @@ app.body <- dashboardBody(
             ),
     tabItem(tabName = "location_stats",
             fluidRow(
-              # Show info box ---------------------------------------------
-              uiOutput(outputId = "country.deaths"),
-              textOutput(outputId = "dotplot.x.info"),
-              textOutput(outputId = "dotplot.y.info")),
+              column(12,
+                     # Show info box ---------------------------------------------
+                     uiOutput(outputId = "country.deaths"),
+                     textOutput(outputId = "dotplot.x.info"),
+                     textOutput(outputId = "dotplot.y.info"))
+              ),
             fluidRow(
-              plotOutput(outputId = "coverage.per.country", hover = "dotplot_hover"))
+              column(12,
+                     plotOutput(outputId = "coverage.per.country", hover = "dotplot_hover"))
+              )
             ),
     tabItem(tabName = "demographic_stats",
             fluidRow(
-              # Show info box ---------------------------------------------
-              uiOutput(outputId = "sex.deaths")
+              column(12,
+                     # Show info box ---------------------------------------------
+                     uiOutput(outputId = "sex.deaths")
+              )
             ),
             fluidRow(
-              # Show barplot, showing the number of deaths per journalist nationality
-              plotOutput(outputId = "barplot.nationality")
-            )
+              column(12,
+                     # Show barplot, showing the number of deaths per journalist nationality
+                     plotOutput(outputId = "barplot.nationality")
+                     )
+              )
             ),
     tabItem(tabName = "hostage_stats",
             # Show info box ---------------------------------------------
             fluidRow(
-              valueBoxOutput(outputId = "captive")
+              column(12,
+                     valueBoxOutput(outputId = "captive")
+                     )
               ),
             fluidRow(
-              plotOutput(outputId = "source.by.coverage")
+              column(12,
+                     plotOutput(outputId = "source.by.coverage")
+                     )
+              )
             )
     )
   )
-)
 
 # Define UI for application that creates a dashboard on journalist deaths since 1992
 ui <- dashboardPage(
@@ -109,7 +121,7 @@ ui <- dashboardPage(
   body = app.body,
   # Set the header color
   skin = "black"
-)
+  )
 
 # Define server logic required to draw charts, datatables, and numeric based boxes
 server <- function(input, output) {
@@ -228,7 +240,7 @@ server <- function(input, output) {
       ds <- deaths_subset()
       # Find the 10 nationalities with the most deaths to plot on barplot
       top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
-      ggplot(ds, aes(x = Nationality, fill = fill.choice())) + geom_bar() +
+      ggplot(ds, aes(x = Nationality, fill = fill.choice())) + geom_bar(color = "black") +
         scale_x_discrete(limits = top.nationalities) + scale_fill_brewer(palette = "Accent") +
         labs(x = "Journalist Nationality", y = "Number of Journalist Deaths",
              title = "Journalist Death by Nationality", fill = input$fill.choice)
