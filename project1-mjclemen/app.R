@@ -66,8 +66,10 @@ app.body <- dashboardBody(
   tabItems(
     tabItem(tabName = "datatable",
             fluidRow(
-              # Show data table ---------------------------------------------
-              dataTableOutput(outputId = "deathstable"))
+              column(12,
+                     # Show data table ---------------------------------------------
+                     dataTableOutput(outputId = "deathstable"))
+              )
             ),
     tabItem(tabName = "location_stats",
             fluidRow(
