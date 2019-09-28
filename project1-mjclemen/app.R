@@ -304,7 +304,7 @@ server <- function(input, output) {
       labs(title="Distribution of Deaths over Time", 
            subtitle="Year of Death grouped by Source of Murder",
            x="Year",
-           y = "Density (Deaths)",
+           y = "Density",
            fill="Source of Murder")
   })
   
