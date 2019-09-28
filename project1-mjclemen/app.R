@@ -162,6 +162,7 @@ server <- function(input, output) {
   # Take the user filtered data and split up comma separated coverages in records 
   # Match these split records to the country the journalist was killed -------------
   dsSplitCoverage <- reactive({
+    req(nrow(deathsSubset()) > 3)
     ds.coverage <- setDT(deathsSubset())[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE),
                            by = .(`Country Killed`, Coverage)
                            ][,.(Coverage = V1, `Country Killed`)]
@@ -187,6 +188,7 @@ server <- function(input, output) {
   output$coverage.per.country <- renderPlot({
     # Read in the reactive subset that has been split on coverage ----------------
     ds <- dsSplitCoverage()
+    req(nrow(ds) > 3)
     # Drop levels after filtering out some categories, then re-factor the column 
     ds$`Country Killed` <- droplevels(ds$`Country Killed`)
     ds$`Country Killed` <- as.factor(str_trim(ds$`Country Killed`))
@@ -261,6 +263,7 @@ server <- function(input, output) {
   # Call the function to read in user's selection of how to fill the barplot -----
   output$barplot.nationality <- renderPlot({
       ds <- deathsSubset()
+      req(nrow(ds) > 2)
       # Find the 10 nationalities with the most deaths to plot on barplot --------
       top.nationalities <- names(tail(sort(table(ds$Nationality)),10))
       ggplot(ds, aes(x = Nationality, fill = barplot.fill.choice())) + geom_bar(color = "black") +
@@ -285,6 +288,7 @@ server <- function(input, output) {
   # Plot the number of deaths over the years, grouped by the Source of the Murder
   output$source.by.year <- renderPlot({
     ds <- deathsSubset()
+    req(nrow(ds) > 3)
     # Take the filtered data, split on Source of Fire (there are some comma separated values) and create a new dataframe
     ds_split <- setDT(ds)[, strsplit(str_trim(as.character(`Source of Fire`)), ",", fixed=TRUE),
                               by = .(Tortured, `Year of Death`,`Source of Fire`)
