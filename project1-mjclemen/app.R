@@ -11,6 +11,7 @@ library(rlist)
 library(scales)
 library(data.table)
 
+# Read in the file on journalist deaths
 deaths <- read.csv("JournalistDeaths.csv")
 
 # Rename column names that have "." separating words
@@ -18,20 +19,24 @@ names(deaths) <- gsub(x = names(deaths), pattern = "\\.", replacement = " ")
 
 # Place application title in header of dashboard
 app.header <- dashboardHeader(
-  title = "Journalist Deaths 1992 - 2019", titleWidth = 300
+  title = "Journalist Killings 1992 - 2019", titleWidth = 300
   )
 
+# Place user inputs and tab options in a sidebar to be displayed in dashboard
 app.sidebar <- dashboardSidebar(
   # Change sidebar width to match the title width
   width = 300,
   
+  # Create four tab options to place the datatable, the 3 valueboxes, and 3 plots
+  # Also place user input controls below the tab options
   sidebarMenu(id = "tabs",
     
-    menuItem("User Filtered Data", tabName = "datatable", icon = icon("table")),
-    menuItem("Place of Death", tabName = "location_stats", icon = icon("th")),
-    menuItem("Journalist Demographics", tabName = "demographic_stats", icon = icon("th")),
-    menuItem("Hostage Stats", tabName = "hostage_stats", icon = icon("th")),
+    menuItem("User Filtered Data", tabName = "datatable", icon = icon("fas fa-table")),
+    menuItem("Place of Death", tabName = "location_stats", icon = icon("fas fa-globe-americas")),
+    menuItem("Journalist Demographics", tabName = "demographic_stats", icon = icon("fas fa-id-card")),
+    menuItem("Murder Stats", tabName = "murder_stats", icon = icon("fas fa-dizzy")),
     
+    # When the user is looking at the demographic tab, they will be given a chance to interact with the barplot
     conditionalPanel(
       condition = "input.tabs == 'demographic_stats'",
       selectInput("fill.choice", "Choose how to fill the Nationality Barplot:", 
@@ -40,8 +45,9 @@ app.sidebar <- dashboardSidebar(
                               "Tortured before Death" = "Tortured"))
     ),
     
+    # When the user is looking at the murder tab, they will be given a chance to interact with the density plot
     conditionalPanel(
-      condition = "input.tabs == 'hostage_stats'",
+      condition = "input.tabs == 'murder_stats'",
       sliderInput(inputId = "adjust.choice",
                   label = "Adjust the bandwidth to get a more local or more global view:",
                   min = 1,
@@ -110,7 +116,7 @@ app.body <- dashboardBody(
                      )
               )
             ),
-    tabItem(tabName = "hostage_stats",
+    tabItem(tabName = "murder_stats",
             # Show info box ---------------------------------------------
             fluidRow(
               column(12,
