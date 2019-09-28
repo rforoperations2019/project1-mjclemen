@@ -165,7 +165,6 @@ server <- function(input, output) {
     
     top.countries <- names(tail(sort(table(ds.coverage$`Country Killed`)), 20))
     ds.coverage <- filter(ds.coverage,`Country Killed` %in% top.countries)
-    
   })
   
   # Country with the most deaths value box ----------------------------------------------
@@ -181,6 +180,8 @@ server <- function(input, output) {
   output$coverage.per.country <- renderPlot({
     # Read in the reactive subset that has been split on coverage
     ds <- ds.split.on.coverage()
+    ds$`Country Killed` <- droplevels(ds$`Country Killed`)
+    ds$`Country Killed` <- as.factor(str_trim(ds$`Country Killed`))
     
     ggplot(ds, aes(x = ds$Coverage, y = ds$`Country Killed`)) +
       geom_dotplot(binaxis='y',
@@ -210,6 +211,8 @@ server <- function(input, output) {
       return("")
     } else {
       ds <- ds.split.on.coverage()
+      ds$`Country Killed` <- droplevels(ds$`Country Killed`)
+      ds$`Country Killed` <- as.factor(str_trim(ds$`Country Killed`))
       country.levels <- levels(ds$`Country Killed`)
       print(country.levels)
       country <- country.levels[round(input$dotplot_hover$y)]
