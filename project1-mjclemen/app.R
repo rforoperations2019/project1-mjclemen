@@ -72,6 +72,7 @@ app.sidebar <- dashboardSidebar(
     )
   )
 
+# Display 4 tabs: 1 containing the datatable and the other 3 each containing a valuebox and a plot
 app.body <- dashboardBody(
   
   tabItems(
@@ -196,12 +197,12 @@ server <- function(input, output) {
     if (is.null(input$dotplot_hover)) {
       return("")
     } else {
-      ds <- deaths_subset()
-      ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
-                            ][,.(Coverage = V1, `Country Killed`)]
-      
-      ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
-      coverage.levels <- levels(ds_split$Coverage)
+      ds <- ds.split.on.coverage()
+      # ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
+      #                       ][,.(Coverage = V1, `Country Killed`)]
+      # 
+      # ds_split$Coverage <- as.factor(str_trim(ds_split$Coverage))
+      coverage.levels <- levels(ds$Coverage)
       coverage <- coverage.levels[round(input$dotplot_hover$x)]
       paste0("You've selected the journalist topic: ", coverage)
     }
@@ -216,7 +217,11 @@ server <- function(input, output) {
       ds_split <- setDT(ds)[, strsplit(str_trim(as.character(Coverage)), ",", fixed=TRUE), by = .(`Country Killed`, Coverage)
                             ][,.(Coverage = V1, `Country Killed`)]
       ds_split$`Country Killed` <- as.factor(str_trim(ds_split$`Country Killed`))
-      country.levels <- levels(ds_split$`Country Killed`)
+      
+      top.countries <- names(tail(sort(table(ds.coverage$`Country Killed`)), 20))
+      ds.coverage <- ds.coverage %>% filter(`Country Killed` %in% top.countries)
+      
+      country.levels <- levels(ds.coverage$`Country Killed`)
       country <- country.levels[round(input$dotplot_hover$y)]
       paste0("You've selected the country: ", country)
     }
